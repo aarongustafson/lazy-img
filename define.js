@@ -1,3 +1,3 @@
-import { ComponentNameElement } from './COMPONENT-NAME.js';
+import { LazyImgElement } from './lazy-img.js';
 
-customElements.define('COMPONENT-NAME', ComponentNameElement);
+customElements.define('lazy-img', LazyImgElement);

@@ -1,2 +1,2 @@
-export { ComponentNameElement } from './COMPONENT-NAME.js';
+export { LazyImgElement } from './lazy-img.js';
 import './define.js';
