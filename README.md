@@ -12,16 +12,16 @@ Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-la
 
 For example, if you set `min-inline-size="768"`, mobile users will never download that image at all — saving their data and speeding up your page load.
 
-**Note on Resize Behavior:** Once an image is loaded, it remains loaded even if the viewport or container is resized below the threshold. This is intentional for performance — the component prevents unnecessary downloads, but doesn't unload images that are already in memory. Use the `loaded` and `qualifies` attributes to control visibility with CSS if needed.
+**Note on Resize Behavior:** Once an image is loaded, it remains loaded even if the viewport or container is resized below the threshold. This is intentional for performance — the component prevents unnecessary downloads, but doesn't unload images that are already in memory. Use the [`loaded` and `qualifies` attributes](#controlling-visibility-with-state-attributes) to control visibility with CSS if needed. — [Demo](https://aarongustafson.github.io/lazy-img/demo/#state-attributes)
 
 ## Features
 
-- **Container Queries**: Load images based on container width (default)
-- **Media Queries**: Load images based on viewport width
-- **Named Breakpoints**: Support for named breakpoints via CSS custom properties
-- **Responsive Images**: Full support for `srcset` and `sizes`
+- **[Container Queries](#container-query-default)**: Load images based on container width (default) — [Demo](https://aarongustafson.github.io/lazy-img/demo/#container-query-example)
+- **[Media Queries](#media-query)**: Load images based on viewport width — [Demo](https://aarongustafson.github.io/lazy-img/demo/#media-query-example)
+- **[Named Breakpoints](#named-breakpoints)**: Support for named breakpoints via CSS custom properties — [Demo](https://aarongustafson.github.io/lazy-img/demo/#named-breakpoints)
+- **[Responsive Images](#responsive-images)**: Full support for `srcset` and `sizes` — [Demo](https://aarongustafson.github.io/lazy-img/demo/#responsive-images)
 - **Throttled Resize**: Efficient resize handling to prevent performance issues
-- **Event-Driven**: Dispatches events when images load
+- **[Event-Driven](#events)**: Dispatches events when images load — [Demo](https://aarongustafson.github.io/lazy-img/demo/#events)
 - **Zero Dependencies**: No external libraries required
 - **Shadow DOM**: Fully encapsulated with CSS custom properties
 
@@ -56,6 +56,8 @@ import { LazyImgElement } from '@aarongustafson/lazy-img';
 
 ### Basic Example
 
+[View Demo](https://aarongustafson.github.io/lazy-img/demo/#basic-example)
+
 ```html
 <lazy-img
   src="image.jpg"
@@ -64,6 +66,8 @@ import { LazyImgElement } from '@aarongustafson/lazy-img';
 ```
 
 ### Container Query (Default)
+
+[View Demo](https://aarongustafson.github.io/lazy-img/demo/#container-query-example)
 
 Load an image when its container reaches a minimum width:
 
@@ -79,6 +83,8 @@ The image will load when the `<lazy-img>` element's container reaches 500px widt
 
 ### Media Query
 
+[View Demo](https://aarongustafson.github.io/lazy-img/demo/#media-query-example)
+
 Load an image based on viewport width:
 
 ```html
@@ -93,6 +99,8 @@ Load an image based on viewport width:
 The image will load when the browser window is at least 768px wide.
 
 ### Responsive Images
+
+[View Demo](https://aarongustafson.github.io/lazy-img/demo/#responsive-images)
 
 Use `srcset` and `sizes` for responsive images:
 
@@ -111,6 +119,8 @@ Use `srcset` and `sizes` for responsive images:
 ```
 
 ### Named Breakpoints
+
+[View Demo](https://aarongustafson.github.io/lazy-img/demo/#named-breakpoints)
 
 You can use named breakpoints by defining the `--lazy-img-mq` CSS custom property:
 
@@ -166,6 +176,8 @@ The image will load when the `--lazy-img-mq` custom property matches any of the 
 
 ### Events
 
+[View Demo](https://aarongustafson.github.io/lazy-img/demo/#events)
+
 | Event | Detail | Description |
 |-------|--------|-------------|
 | `lazy-img:loaded` | `{ src: string }` | Fired when the image has loaded |
@@ -208,6 +220,8 @@ lazy-img {
 ## Examples
 
 ### Controlling Visibility with State Attributes
+
+[View Demo](https://aarongustafson.github.io/lazy-img/demo/#state-attributes)
 
 The `loaded` and `qualifies` attributes allow you to control visibility based on current conditions:
 
