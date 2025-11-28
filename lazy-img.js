@@ -302,6 +302,13 @@ export class LazyImgElement extends HTMLElement {
 
 	render() {
 		const src = this.getAttribute('src');
+
+		// Bail early if no src - img would be invalid
+		if (!src) {
+			this.shadowRoot.innerHTML = '';
+			return;
+		}
+
 		let imageHTML = '';
 
 		// Only render image if loaded or if no loading conditions are set
@@ -310,12 +317,9 @@ export class LazyImgElement extends HTMLElement {
 			(!this.getAttribute('min-inline-size') &&
 				!this.getAttribute('named-breakpoints'))
 		) {
-			if (src) {
-				const imgAttrs = this._getImgAttributes();
-				const attrString =
-					LazyImgElement._buildAttributeString(imgAttrs);
-				imageHTML = `<img ${attrString} />`;
-			}
+			const imgAttrs = this._getImgAttributes();
+			const attrString = LazyImgElement._buildAttributeString(imgAttrs);
+			imageHTML = `<img ${attrString} />`;
 		}
 
 		this.shadowRoot.innerHTML = `
