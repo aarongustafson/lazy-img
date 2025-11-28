@@ -246,21 +246,22 @@ export class LazyImgElement extends HTMLElement {
 				});
 			};
 
-		// Register with shared observer
-		const shared = LazyImgElement._getSharedObserver(targetElement);
-		shared.callbacks.add(this._resizeCallback);
-	} else {
-		// Use shared window resize listener for media queries
-		this._handleResize = () => {
-			this._throttledResize(() => {
-				this._currentSize = window.innerWidth;
-				this._checkAndLoad();
-			});
-		};
-		addWindowResizeCallback(this._handleResize);
-		// Initial check
-		this._currentSize = window.innerWidth;
-	}		this._checkAndLoad();
+			// Register with shared observer
+			const shared = LazyImgElement._getSharedObserver(targetElement);
+			shared.callbacks.add(this._resizeCallback);
+		} else {
+			// Use shared window resize listener for media queries
+			this._handleResize = () => {
+				this._throttledResize(() => {
+					this._currentSize = window.innerWidth;
+					this._checkAndLoad();
+				});
+			};
+			addWindowResizeCallback(this._handleResize);
+			// Initial check
+			this._currentSize = window.innerWidth;
+		}
+		this._checkAndLoad();
 	}
 
 	_cleanupResizeWatcher() {

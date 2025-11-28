@@ -175,7 +175,7 @@ describe('LazyImgElement', () => {
 
 			// Manually trigger setup
 			element._setupResizeWatcher();
-			
+
 			// Verify callback is registered
 			expect(element._handleResize).toBeTruthy();
 
@@ -189,7 +189,7 @@ describe('LazyImgElement', () => {
 			// Create two lazy-img elements using media query mode
 			const element1 = document.createElement('lazy-img');
 			const element2 = document.createElement('lazy-img');
-			
+
 			document.body.appendChild(element1);
 			document.body.appendChild(element2);
 
@@ -197,7 +197,7 @@ describe('LazyImgElement', () => {
 			element1.setAttribute('min-inline-size', '768');
 			element1.setAttribute('query', 'media');
 			element1.connectedCallback();
-			
+
 			element2.setAttribute('src', 'test2.jpg');
 			element2.setAttribute('min-inline-size', '1024');
 			element2.setAttribute('query', 'media');
