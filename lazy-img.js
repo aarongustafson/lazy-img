@@ -295,10 +295,11 @@ export class LazyImgElement extends HTMLElement {
 		this._minInlineSize = null;
 		this._queryType = 'container'; // Cache query type
 		this._parsedBreakpoints = null; // Cache parsed breakpoint array
-
-		// Inject static CSS once in constructor instead of on every render
-		const style = document.createElement('style');
-		style.textContent = `
+		this._styleInjected = false; // Track if CSS has been injected
+		
+		// Create style element once but don't inject until needed
+		this._styleElement = document.createElement('style');
+		this._styleElement.textContent = `
 			:host {
 				display: var(--lazy-img-display, block);
 			}
@@ -307,7 +308,6 @@ export class LazyImgElement extends HTMLElement {
 				height: auto;
 			}
 		`;
-		this.shadowRoot.appendChild(style);
 	}
 
 	connectedCallback() {
@@ -581,6 +581,12 @@ export class LazyImgElement extends HTMLElement {
 				img.remove();
 			}
 			return;
+		}
+
+		// Inject CSS on first render (lazy initialization)
+		if (!this._styleInjected) {
+			this.shadowRoot.appendChild(this._styleElement);
+			this._styleInjected = true;
 		}
 
 		// Only render image if loaded or if no loading conditions are set
