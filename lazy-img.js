@@ -30,6 +30,32 @@
 // lazy-img elements observe the same parent container
 const sharedObservers = new WeakMap();
 
+// Shared window resize listener to improve performance when multiple
+// lazy-img elements use media query mode
+const windowResizeCallbacks = new Set();
+let windowResizeListenerAttached = false;
+
+function handleWindowResize() {
+	windowResizeCallbacks.forEach((callback) => callback());
+}
+
+function addWindowResizeCallback(callback) {
+	windowResizeCallbacks.add(callback);
+	if (!windowResizeListenerAttached) {
+		window.addEventListener('resize', handleWindowResize);
+		windowResizeListenerAttached = true;
+	}
+}
+
+function removeWindowResizeCallback(callback) {
+	windowResizeCallbacks.delete(callback);
+	// Clean up listener if no more callbacks
+	if (windowResizeCallbacks.size === 0 && windowResizeListenerAttached) {
+		window.removeEventListener('resize', handleWindowResize);
+		windowResizeListenerAttached = false;
+	}
+}
+
 export class LazyImgElement extends HTMLElement {
 	// Attributes that get passed through to the inner <img> element
 	static IMG_ATTRIBUTES = [
@@ -220,23 +246,21 @@ export class LazyImgElement extends HTMLElement {
 				});
 			};
 
-			// Register with shared observer
-			const shared = LazyImgElement._getSharedObserver(targetElement);
-			shared.callbacks.add(this._resizeCallback);
-		} else {
-			// Use window resize for media queries
-			this._handleResize = () => {
-				this._throttledResize(() => {
-					this._currentSize = window.innerWidth;
-					this._checkAndLoad();
-				});
-			};
-			window.addEventListener('resize', this._handleResize);
-			// Initial check
-			this._currentSize = window.innerWidth;
-		}
-
-		this._checkAndLoad();
+		// Register with shared observer
+		const shared = LazyImgElement._getSharedObserver(targetElement);
+		shared.callbacks.add(this._resizeCallback);
+	} else {
+		// Use shared window resize listener for media queries
+		this._handleResize = () => {
+			this._throttledResize(() => {
+				this._currentSize = window.innerWidth;
+				this._checkAndLoad();
+			});
+		};
+		addWindowResizeCallback(this._handleResize);
+		// Initial check
+		this._currentSize = window.innerWidth;
+	}		this._checkAndLoad();
 	}
 
 	_cleanupResizeWatcher() {
@@ -249,9 +273,9 @@ export class LazyImgElement extends HTMLElement {
 			this._observedTarget = null;
 			this._resizeCallback = null;
 		}
-		// Cleanup window resize listener
+		// Cleanup shared window resize listener
 		if (this._handleResize) {
-			window.removeEventListener('resize', this._handleResize);
+			removeWindowResizeCallback(this._handleResize);
 			this._handleResize = null;
 		}
 		// Cleanup throttle timeout

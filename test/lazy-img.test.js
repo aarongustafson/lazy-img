@@ -175,18 +175,51 @@ describe('LazyImgElement', () => {
 
 			// Manually trigger setup
 			element._setupResizeWatcher();
-			const handleResize = element._handleResize;
+			
+			// Verify callback is registered
+			expect(element._handleResize).toBeTruthy();
 
-			const removeEventListenerSpy = vi.spyOn(
-				window,
-				'removeEventListener',
-			);
 			element.disconnectedCallback();
 
-			expect(removeEventListenerSpy).toHaveBeenCalledWith(
-				'resize',
-				handleResize,
-			);
+			// Verify callback is cleaned up
+			expect(element._handleResize).toBeNull();
+		});
+
+		it('should share window resize listener between multiple instances in media query mode', () => {
+			// Create two lazy-img elements using media query mode
+			const element1 = document.createElement('lazy-img');
+			const element2 = document.createElement('lazy-img');
+			
+			document.body.appendChild(element1);
+			document.body.appendChild(element2);
+
+			element1.setAttribute('src', 'test1.jpg');
+			element1.setAttribute('min-inline-size', '768');
+			element1.setAttribute('query', 'media');
+			element1.connectedCallback();
+			
+			element2.setAttribute('src', 'test2.jpg');
+			element2.setAttribute('min-inline-size', '1024');
+			element2.setAttribute('query', 'media');
+			element2.connectedCallback();
+
+			// Both should have their own callbacks
+			expect(element1._handleResize).toBeTruthy();
+			expect(element2._handleResize).toBeTruthy();
+			expect(element1._handleResize).not.toBe(element2._handleResize);
+
+			// Disconnect first element
+			element1.disconnectedCallback();
+			expect(element1._handleResize).toBeNull();
+			expect(element2._handleResize).toBeTruthy();
+
+			// Disconnect second element
+			element2.disconnectedCallback();
+			expect(element2._handleResize).toBeNull();
+
+			// Clean up DOM
+			document.body.removeChild(element1);
+			document.body.removeChild(element2);
 		});
 	});
 

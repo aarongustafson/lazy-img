@@ -441,8 +441,9 @@ Key differences:
 
 - **Throttled Resize**: Resize events are throttled to 150ms to prevent excessive checks
 - **Shared ResizeObserver**: Multiple `lazy-img` elements observing the same parent container share a single `ResizeObserver` instance, making it highly efficient for galleries and other scenarios with many images
+- **Shared Window Resize Listener**: Multiple `lazy-img` elements using media query mode (`query="media"`) share a single window resize event listener, ensuring optimal performance even with hundreds of instances on a page
 - **Efficient Loading**: Images only render in the DOM after loading conditions are met
-- **Clean Disconnection**: Properly cleans up observers when the element is removed; automatically removes unused shared observers
+- **Clean Disconnection**: Properly cleans up observers and event listeners when elements are removed; automatically removes unused shared observers and listeners when no longer needed
 
 ## License
 
