@@ -295,7 +295,7 @@ export class LazyImgElement extends HTMLElement {
 		this._minInlineSize = null;
 		this._queryType = 'container'; // Cache query type
 		this._parsedBreakpoints = null; // Cache parsed breakpoint array
-		
+
 		// Inject static CSS once in constructor instead of on every render
 		const style = document.createElement('style');
 		style.textContent = `
@@ -315,7 +315,7 @@ export class LazyImgElement extends HTMLElement {
 		this._namedBreakpoints = this.getAttribute('named-breakpoints');
 		this._minInlineSize = this.getAttribute('min-inline-size');
 		this._queryType = this.getAttribute('query') || 'container';
-		
+
 		// Parse and cache breakpoints array to avoid repeated splitting
 		if (this._namedBreakpoints) {
 			this._parsedBreakpoints = this._namedBreakpoints
@@ -595,7 +595,7 @@ export class LazyImgElement extends HTMLElement {
 			// Check if image already exists to avoid unnecessary DOM updates
 			const existingImg = this.shadowRoot.querySelector('img');
 			const imgAttrs = this._getImgAttributes();
-			
+
 			if (existingImg) {
 				// Update existing img attributes instead of recreating
 				for (const [key, value] of Object.entries(imgAttrs)) {
