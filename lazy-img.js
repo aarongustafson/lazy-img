@@ -37,6 +37,12 @@ export class LazyImgElement extends HTMLElement {
 			.trim();
 	}
 
+	static escapeHtml(text) {
+		const div = document.createElement('div');
+		div.textContent = text;
+		return div.innerHTML;
+	}
+
 	constructor() {
 		super();
 		this.attachShadow({ mode: 'open' });
@@ -242,10 +248,10 @@ export class LazyImgElement extends HTMLElement {
 		) {
 			if (src) {
 				imageHTML = `<img
-					src="${this._escapeHtml(src)}"
-					alt="${this._escapeHtml(alt)}"
-					${srcset ? `srcset="${this._escapeHtml(srcset)}"` : ''}
-					${sizes ? `sizes="${this._escapeHtml(sizes)}"` : ''}
+					src="${LazyImgElement.escapeHtml(src)}"
+					alt="${LazyImgElement.escapeHtml(alt)}"
+					${srcset ? `srcset="${LazyImgElement.escapeHtml(srcset)}"` : ''}
+					${sizes ? `sizes="${LazyImgElement.escapeHtml(sizes)}"` : ''}
 				/>`;
 			}
 		}
@@ -262,12 +268,5 @@ export class LazyImgElement extends HTMLElement {
 			</style>
 			${imageHTML}
 		`;
-	}
-
-	// eslint-disable-next-line class-methods-use-this
-	_escapeHtml(text) {
-		const div = document.createElement('div');
-		div.textContent = text;
-		return div.innerHTML;
 	}
 }
