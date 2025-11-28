@@ -589,4 +589,187 @@ describe('LazyImgElement', () => {
 			expect(element.hasAttribute('qualifies')).toBe(true);
 		});
 	});
+
+	describe('View mode (IntersectionObserver)', () => {
+		it('should load image when element intersects viewport with default settings', (done) => {
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('query', 'view');
+			element.connectedCallback();
+
+			// Wait for intersection
+			setTimeout(() => {
+				const img = element.shadowRoot.querySelector('img');
+				expect(img).toBeTruthy();
+				expect(img.getAttribute('src')).toBe('test.jpg');
+				expect(element.hasAttribute('loaded')).toBe(true);
+				done();
+			}, 100);
+		});
+
+		it('should parse entry X% as threshold', () => {
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('query', 'view');
+			element.setAttribute('view-range-start', 'entry 50%');
+			element.connectedCallback();
+
+			expect(element._intersectionConfig.threshold).toBe(0.5);
+			expect(element._intersectionConfig.rootMargin).toBe('0px');
+		});
+
+		it('should parse entry -Xpx as rootMargin for preloading', () => {
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('query', 'view');
+			element.setAttribute('view-range-start', 'entry -200px');
+			element.connectedCallback();
+
+			expect(element._intersectionConfig.rootMargin).toBe(
+				'0px 0px 200px 0px',
+			);
+			expect(element._intersectionConfig.threshold).toBe(0);
+		});
+
+		it('should share IntersectionObserver between instances with same config', () => {
+			const element1 = document.createElement('lazy-img');
+			const element2 = document.createElement('lazy-img');
+
+			document.body.appendChild(element1);
+			document.body.appendChild(element2);
+
+			element1.setAttribute('src', 'test1.jpg');
+			element1.setAttribute('query', 'view');
+			element1.setAttribute('view-range-start', 'entry 25%');
+			element1.connectedCallback();
+
+			element2.setAttribute('src', 'test2.jpg');
+			element2.setAttribute('query', 'view');
+			element2.setAttribute('view-range-start', 'entry 25%');
+			element2.connectedCallback();
+
+			// Both should have same config
+			expect(element1._intersectionConfig.threshold).toBe(
+				element2._intersectionConfig.threshold,
+			);
+			expect(element1._intersectionConfig.rootMargin).toBe(
+				element2._intersectionConfig.rootMargin,
+			);
+
+			// Both should have callbacks registered
+			expect(element1._intersectionCallback).toBeTruthy();
+			expect(element2._intersectionCallback).toBeTruthy();
+
+			// Clean up
+			document.body.removeChild(element1);
+			document.body.removeChild(element2);
+		});
+
+		it('should clean up IntersectionObserver callback on disconnect', () => {
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('query', 'view');
+			element.setAttribute('view-range-start', 'entry 10%');
+			element.connectedCallback();
+
+			expect(element._intersectionCallback).toBeTruthy();
+			expect(element._intersectionConfig).toBeTruthy();
+
+			element.disconnectedCallback();
+
+			expect(element._intersectionCallback).toBeNull();
+			expect(element._intersectionConfig).toBeNull();
+		});
+
+		it('should automatically clean up shared observer when all instances disconnect', () => {
+			const element1 = document.createElement('lazy-img');
+			const element2 = document.createElement('lazy-img');
+
+			document.body.appendChild(element1);
+			document.body.appendChild(element2);
+
+			element1.setAttribute('src', 'test1.jpg');
+			element1.setAttribute('query', 'view');
+			element1.setAttribute('view-range-start', 'entry 75%');
+			element1.connectedCallback();
+
+			element2.setAttribute('src', 'test2.jpg');
+			element2.setAttribute('query', 'view');
+			element2.setAttribute('view-range-start', 'entry 75%');
+			element2.connectedCallback();
+
+			// Disconnect first element
+			element1.disconnectedCallback();
+			expect(element1._intersectionCallback).toBeNull();
+
+			// Disconnect second element
+			element2.disconnectedCallback();
+			expect(element2._intersectionCallback).toBeNull();
+
+			// Clean up DOM
+			document.body.removeChild(element1);
+			document.body.removeChild(element2);
+		});
+
+		it('should warn on invalid view-range-start percentage', () => {
+			const consoleSpy = vi
+				.spyOn(console, 'warn')
+				.mockImplementation(() => {});
+
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('query', 'view');
+			element.setAttribute('view-range-start', 'entry 150%');
+			element.connectedCallback();
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining(
+					'view-range-start percentage must be between 0 and 100',
+				),
+			);
+
+			consoleSpy.mockRestore();
+		});
+
+		it('should warn on invalid view-range-start format', () => {
+			const consoleSpy = vi
+				.spyOn(console, 'warn')
+				.mockImplementation(() => {});
+
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('query', 'view');
+			element.setAttribute('view-range-start', 'invalid format');
+			element.connectedCallback();
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining('invalid view-range-start format'),
+			);
+
+			consoleSpy.mockRestore();
+		});
+
+		it('should use default values for empty view-range-start', () => {
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('query', 'view');
+			// No view-range-start set, should use default "entry 0%"
+			element.connectedCallback();
+
+			expect(element._intersectionConfig.threshold).toBe(0);
+			expect(element._intersectionConfig.rootMargin).toBe('0px');
+		});
+
+		it('should not update qualifies attribute in view mode', (done) => {
+			// Remove and recreate element to avoid double connectedCallback
+			document.body.removeChild(element);
+			element = document.createElement('lazy-img');
+
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('query', 'view');
+			document.body.appendChild(element); // This triggers connectedCallback
+
+			// In view mode, qualifies should not be set (one-time load trigger)
+			expect(element.hasAttribute('qualifies')).toBe(false);
+
+			setTimeout(() => {
+				// Even after loading, qualifies should not be set in view mode
+				expect(element.hasAttribute('qualifies')).toBe(false);
+				done();
+			}, 100);
+		});
+	});
 });
