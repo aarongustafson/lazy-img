@@ -1,152 +1,310 @@
-# Web Component Starter Template
+# &lt;lazy-img&gt;
 
-A comprehensive, production-ready starter template for creating Web Components. This template is based on the architecture and best practices from [form-obfuscator](https://github.com/aarongustafson/form-obfuscator).
+A lightweight, flexible web component for lazy-loading images based on viewport or container size. Perfect for responsive images that should only load when needed.
+
+Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-lazy-images.js) by Aaron Gustafson, now reimagined as a modern Custom Element.
+
+## 🎯 Why Use This?
+
+**Performance Benefit:** Unlike `<picture>` or `srcset` which always load *some* image variant, `<lazy-img>` can **completely skip loading images** on screens or containers below your specified threshold. This saves bandwidth and improves performance for users on smaller devices or slower connections.
+
+For example, if you set `min-inline-size="768"`, mobile users will never download that image at all — saving their data and speeding up your page load.
 
 ## ✨ Features
 
-- **Modern Tooling**: Vitest, ESLint, Prettier, Happy DOM
-- **Best Practices**: Shadow DOM, Custom Elements v1, proper encapsulation
-- **Multiple Import Options**: Auto-define, manual definition, or both
-- **Testing**: Comprehensive test setup with coverage reporting
-- **CI/CD**: GitHub Actions workflows included
-- **Developer Experience**: Demo page, interactive setup, extensive documentation
-- **Publishing Ready**: npm package configuration and automated publishing workflow
+- **Container Queries**: Load images based on container width (default)
+- **Media Queries**: Load images based on viewport width
+- **Named Breakpoints**: Support for named breakpoints via CSS custom properties
+- **Responsive Images**: Full support for `srcset` and `sizes`
+- **Throttled Resize**: Efficient resize handling to prevent performance issues
+- **Event-Driven**: Dispatches events when images load
+- **Zero Dependencies**: No external libraries required
+- **Shadow DOM**: Fully encapsulated with CSS custom properties
 
-## 🚀 Quick Start
+## 📦 Installation
 
-### Use This Template
-
-1. Click "Use this template" on GitHub, or:
-
-```bash
-git clone https://github.com/aarongustafson/web-component-starter.git my-component
-cd my-component
-```
-
-2. Run the interactive setup:
+### npm
 
 ```bash
-npm install
-npm run setup
+npm install @aarongustafson/lazy-img
 ```
 
-The setup wizard will:
-- Ask for your component name (e.g., `my-awesome-component`)
-- Ask for a description
-- Rename all files automatically
-- Replace all placeholders
-- **Clean up template setup files** (SETUP.md, scripts/)
-- Install dependencies
-- Initialize git repository
-
-### Manual Setup
-
-If you prefer manual setup, see [SETUP.md](SETUP.md) for detailed instructions.
-
-## 📁 What's Included
-
-```
-web-component-starter/
-├── lazy-img.js          # Component implementation
-├── index.js                   # Main entry (class + auto-define)
-├── define.js                  # Auto-define only
-├── custom-elements.json       # Custom Elements Manifest
-├── package.json               # Package config with scripts
-├── LICENSE                    # MIT License
-├── .gitignore                 # Git ignore
-├── .npmignore                 # npm ignore
-├── .prettierrc                # Prettier config
-├── .editorconfig              # Editor config
-├── eslint.config.js           # ESLint config
-├── vitest.config.js           # Vitest config
-├── .github/
-│   ├── workflows/
-│   │   ├── ci.yml            # Continuous integration
-│   │   └── publish.yml       # Auto-publish to npm
-│   └── ISSUE_TEMPLATE/       # Bug & feature templates
-├── scripts/
-│   └── setup.js              # Interactive setup wizard (removed after setup)
-├── test/
-│   ├── setup.js              # Test configuration
-│   └── lazy-img.test.js # Test suite
-├── demo/
-│   └── index.html            # Live demo page
-├── SETUP.md                  # Manual setup guide
-└── CONTRIBUTING.md           # Contribution guidelines
-```
-
-## 🛠️ Development
-
-### Available Scripts
-
-```bash
-npm run setup          # Interactive setup wizard
-npm test               # Run tests in watch mode
-npm run test:run       # Run tests once
-npm run test:ui        # Open Vitest UI
-npm run test:coverage  # Generate coverage report
-npm run lint           # Lint with ESLint + Prettier
-npm run format         # Auto-fix linting issues
-```
-
-### Component Architecture
-
-This template provides three flexible import options:
+### Import
 
 **Option 1: Auto-define (easiest)**
 ```javascript
-import '@yourscope/component-name';
-// Element is automatically registered
+import '@aarongustafson/lazy-img';
 ```
 
 **Option 2: Manual registration**
 ```javascript
-import { LazyImgElement } from '@yourscope/component-name/component-name.js';
-customElements.define('my-custom-name', LazyImgElement);
+import { LazyImgElement } from '@aarongustafson/lazy-img/lazy-img.js';
+customElements.define('lazy-img', LazyImgElement);
 ```
 
 **Option 3: Both**
 ```javascript
-import { LazyImgElement } from '@yourscope/component-name';
-// Element is registered AND class is available for extension
+import { LazyImgElement } from '@aarongustafson/lazy-img';
+// Element is registered AND class is available
 ```
 
-## 🧪 Testing
+## 🚀 Usage
 
-Includes:
-- **Vitest**: Fast, modern test runner
-- **Happy DOM**: Lightweight browser environment
-- **Testing Library**: DOM testing utilities
-- **Coverage**: V8 coverage reporting
-- **UI**: Interactive test debugging
+### Basic Example
 
-Example:
+```html
+<lazy-img
+  src="image.jpg"
+  alt="A beautiful image">
+</lazy-img>
+```
+
+### Container Query (Default)
+
+Load an image when its container reaches a minimum width:
+
+```html
+<lazy-img
+  src="large-image.jpg"
+  alt="Large image"
+  min-inline-size="500">
+</lazy-img>
+```
+
+The image will load when the `<lazy-img>` element's container reaches 500px width.
+
+### Media Query
+
+Load an image based on viewport width:
+
+```html
+<lazy-img
+  src="desktop-image.jpg"
+  alt="Desktop image"
+  min-inline-size="768"
+  query="media">
+</lazy-img>
+```
+
+The image will load when the browser window is at least 768px wide.
+
+### Responsive Images
+
+Use `srcset` and `sizes` for responsive images:
+
+```html
+<lazy-img
+  src="image-800.jpg"
+  srcset="image-400.jpg 400w,
+          image-800.jpg 800w,
+          image-1200.jpg 1200w"
+  sizes="(max-width: 600px) 400px,
+         (max-width: 1000px) 800px,
+         1200px"
+  alt="Responsive image"
+  min-inline-size="400">
+</lazy-img>
+```
+
+### Named Breakpoints
+
+You can use named breakpoints by defining the `--lazy-img-mq` CSS custom property:
+
+```css
+:root {
+  --lazy-img-mq: small;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --lazy-img-mq: medium;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --lazy-img-mq: large;
+  }
+}
+```
+
+```html
+<lazy-img
+  src="image.jpg"
+  alt="Image with named breakpoints"
+  named-breakpoints="medium, large"
+  query="media">
+</lazy-img>
+```
+
+The image will load when the `--lazy-img-mq` custom property matches any of the specified breakpoint names.
+
+## 📖 API
+
+### Attributes
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `src` | String | - | **Required.** The image source URL |
+| `alt` | String | `""` | Alternative text for the image |
+| `srcset` | String | - | Responsive image source set |
+| `sizes` | String | - | Responsive image sizes |
+| `min-inline-size` | String (Number) | - | Minimum inline size in pixels to load the image |
+| `named-breakpoints` | String | - | Comma-separated list of named breakpoints (reads from `--lazy-img-mq` CSS custom property) |
+| `query` | String | `"container"` | Query type: `"container"` or `"media"` |
+
+### Query Types
+
+- **`container`** (default): Uses ResizeObserver to watch the element's container size
+- **`media`**: Uses window resize events to watch viewport size
+
+### Events
+
+| Event | Detail | Description |
+|-------|--------|-------------|
+| `lazy-img:loaded` | `{ src: string }` | Fired when the image has loaded |
+
+#### Event Example
+
 ```javascript
-import { describe, it, expect } from 'vitest';
-
-describe('MyComponent', () => {
-  it('should render', () => {
-    const el = document.createElement('my-component');
-    expect(el).toBeInstanceOf(HTMLElement);
-  });
+const lazyImg = document.querySelector('lazy-img');
+lazyImg.addEventListener('lazy-img:loaded', (event) => {
+  console.log('Image loaded:', event.detail.src);
 });
 ```
 
-## 📦 Publishing
+### CSS Custom Properties
 
-### Setup npm Publishing
+| Property | Default | Description |
+|----------|---------|-------------|
+| `--lazy-img-display` | `block` | Display mode for the component |
+| `--lazy-img-mq` | - | Current named breakpoint identifier (define on `:root` with `@media` queries) |
 
-1. Add `NPM_TOKEN` to GitHub repository secrets
-2. Update version in `package.json`
-3. Create a GitHub release
-4. Automated workflow publishes to npm
+#### CSS Example
 
-### Manual Publishing
+```css
+lazy-img {
+  --lazy-img-display: inline-block;
+}
 
-```bash
-npm run test:run  # Ensure tests pass
-npm run lint      # Ensure code is clean
-npm publish       # Publish to npm
+/* Define named breakpoints */
+:root {
+  --lazy-img-mq: small;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --lazy-img-mq: medium;
+  }
+}
+```
+
+## 🎯 Examples
+
+### Load Different Images at Different Breakpoints
+
+You can use multiple `<lazy-img>` elements with different configurations:
+
+```html
+<!-- Mobile: Load small image immediately -->
+<lazy-img
+  src="mobile-image.jpg"
+  alt="Mobile view"
+  class="mobile-only">
+</lazy-img>
+
+<!-- Tablet: Load at 768px viewport -->
+<lazy-img
+  src="tablet-image.jpg"
+  alt="Tablet view"
+  min-inline-size="768"
+  query="media"
+  class="tablet-only">
+</lazy-img>
+
+<!-- Desktop: Load at 1024px viewport -->
+<lazy-img
+  src="desktop-image.jpg"
+  alt="Desktop view"
+  min-inline-size="1024"
+  query="media"
+  class="desktop-only">
+</lazy-img>
+```
+
+### Progressive Image Loading in Containers
+
+```html
+<style>
+  .sidebar {
+    container-type: inline-size;
+  }
+</style>
+
+<div class="sidebar">
+  <lazy-img
+    src="sidebar-image.jpg"
+    alt="Sidebar content"
+    min-inline-size="300">
+  </lazy-img>
+</div>
+```
+
+### Art Direction with Named Breakpoints
+
+```css
+/* Define breakpoints in your CSS */
+:root { --lazy-img-mq: small; }
+@media (min-width: 768px) { :root { --lazy-img-mq: medium; } }
+@media (min-width: 1024px) { :root { --lazy-img-mq: large; } }
+@media (min-width: 1440px) { :root { --lazy-img-mq: xlarge; } }
+```
+
+```html
+<lazy-img
+  src="portrait.jpg"
+  alt="Portrait orientation"
+  named-breakpoints="small, medium"
+  query="media">
+</lazy-img>
+
+<lazy-img
+  src="landscape.jpg"
+  alt="Landscape orientation"
+  named-breakpoints="large, xlarge"
+  query="media">
+</lazy-img>
+```
+
+## 🔧 Configuration Patterns
+
+### Immediate Loading (No Conditions)
+
+If you don't specify `min-inline-size` or `named-breakpoints`, the image loads immediately:
+
+```html
+<lazy-img src="image.jpg" alt="Loads immediately"></lazy-img>
+```
+
+### Container-Based Loading (Default)
+
+```html
+<lazy-img
+  src="image.jpg"
+  alt="Container-based"
+  min-inline-size="400">
+</lazy-img>
+```
+
+### Viewport-Based Loading
+
+```html
+<lazy-img
+  src="image.jpg"
+  alt="Viewport-based"
+  min-inline-size="768"
+  query="media">
+</lazy-img>
 ```
 
 ## 🌐 Browser Support
@@ -154,30 +312,50 @@ npm publish       # Publish to npm
 Works in all modern browsers supporting:
 - Custom Elements v1
 - Shadow DOM v1
+- ResizeObserver (for container queries)
 - ES Modules
 
-For legacy browsers, use polyfills.
+For legacy browser support, consider polyfills for Custom Elements and ResizeObserver.
 
-## 📚 Documentation
+## 🔄 Migration from Easy Lazy Images
 
-- [SETUP.md](SETUP.md) - Detailed setup instructions (removed after setup)
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
-- [LICENSE](LICENSE) - MIT License
+If you're migrating from the original Easy Lazy Images script:
 
-## 🎯 Use Cases
+**Before:**
+```html
+<div data-image-src="image.jpg"
+     data-image-alt="Alt text"
+     data-image-srcset="image-400.jpg 400w, image-800.jpg 800w">
+</div>
 
-Perfect for:
-- Reusable UI components
-- Design system elements
-- Form controls and widgets
-- Interactive content blocks
-- Accessibility-enhanced components
+<script>
+  window.easyLazyImages(500);
+</script>
+```
 
-## 🙏 Credits
+**After:**
+```html
+<lazy-img
+  src="image.jpg"
+  alt="Alt text"
+  srcset="image-400.jpg 400w, image-800.jpg 800w"
+  min-inline-size="500"
+  query="media">
+</lazy-img>
+```
 
-Based on best practices from:
-- [form-obfuscator](https://github.com/aarongustafson/form-obfuscator) by Aaron Gustafson
-- [Open Web Components](https://open-wc.org/)
+Key differences:
+- Uses a custom element instead of a global function
+- Configuration is per-element via attributes
+- Default query type is `container` (not `media`)
+- No longer requires `watchResize()` - uses ResizeObserver internally
+
+## ⚙️ Performance
+
+- **Throttled Resize**: Resize events are throttled to 150ms to prevent excessive checks
+- **Single Observer**: Uses one ResizeObserver instance per element
+- **Efficient Loading**: Images only render in the DOM after loading conditions are met
+- **Clean Disconnection**: Properly cleans up observers when element is removed
 
 ## 📄 License
 
@@ -187,6 +365,10 @@ MIT - See [LICENSE](LICENSE)
 
 Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md)
 
----
+## 👤 Author
 
-**Ready to build your web component?** Run `npm run setup` to get started! 🚀
+Aaron Gustafson <aaron@easy-designs.net> (https://www.aaron-gustafson.com/)
+
+## 🙏 Credits
+
+Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-lazy-images.js) concept, reimagined as a modern Custom Element.
