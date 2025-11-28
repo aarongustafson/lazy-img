@@ -157,17 +157,36 @@ The image will load when the `--lazy-img-mq` custom property matches any of the 
 
 ### Attributes
 
+#### Image Attributes (passed to `<img>`)
+
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `src` | String | - | **Required.** The image source URL |
 | `alt` | String | `""` | Alternative text for the image |
 | `srcset` | String | - | Responsive image source set |
 | `sizes` | String | - | Responsive image sizes |
+| `width` | String (Number) | - | Intrinsic width of the image (helps prevent layout shift) |
+| `height` | String (Number) | - | Intrinsic height of the image (helps prevent layout shift) |
+| `loading` | String | - | Native lazy loading hint: `"lazy"` or `"eager"` |
+| `decoding` | String | - | Image decoding hint: `"async"`, `"sync"`, or `"auto"` |
+| `fetchpriority` | String | - | Resource fetch priority: `"high"`, `"low"`, or `"auto"` |
+| `crossorigin` | String | - | CORS settings: `"anonymous"` or `"use-credentials"` |
+| `referrerpolicy` | String | - | Referrer policy for the image request |
+
+#### Configuration Attributes
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
 | `min-inline-size` | String (Number) | - | Minimum inline size in pixels to load the image |
 | `named-breakpoints` | String | - | Comma-separated list of named breakpoints (reads from `--lazy-img-mq` CSS custom property) |
 | `query` | String | `"container"` | Query type: `"container"` or `"media"` |
-| `loaded` | Boolean | - | **Read-only.** Reflects whether the image has been loaded |
-| `qualifies` | Boolean | - | **Read-only.** Reflects whether element currently meets conditions to display |
+
+#### State Attributes (read-only)
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `loaded` | Boolean | Reflects whether the image has been loaded |
+| `qualifies` | Boolean | Reflects whether element currently meets conditions to display |
 
 ### Query Types
 
@@ -218,6 +237,50 @@ lazy-img {
 ```
 
 ## Examples
+
+### Preventing Layout Shift with Width and Height
+
+[Recommended for Core Web Vitals]
+
+```html
+<lazy-img
+  src="image.jpg"
+  alt="A beautiful image"
+  width="800"
+  height="600"
+  min-inline-size="768">
+</lazy-img>
+```
+
+The `width` and `height` attributes help browsers calculate the aspect ratio and reserve space before the image loads, preventing Cumulative Layout Shift (CLS).
+
+### Using fetchpriority for LCP Images
+
+```html
+<lazy-img
+  src="hero-image.jpg"
+  alt="Hero image"
+  width="1200"
+  height="600"
+  fetchpriority="high"
+  loading="eager">
+</lazy-img>
+```
+
+Use `fetchpriority="high"` for above-the-fold images that are critical for Largest Contentful Paint (LCP).
+
+### CORS Images for Canvas Manipulation
+
+```html
+<lazy-img
+  src="https://cdn.example.com/image.jpg"
+  alt="CDN image"
+  crossorigin="anonymous"
+  min-inline-size="500">
+</lazy-img>
+```
+
+The `crossorigin` attribute is necessary when you need to manipulate images from different origins in a canvas.
 
 ### Controlling Visibility with State Attributes
 
