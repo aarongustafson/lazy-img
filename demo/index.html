@@ -30,6 +30,18 @@
 				font-size: 0.9em;
 			}
 
+			.load-time-display {
+				background: #f0fdf4;
+				padding: 0.5rem;
+				margin-top: 0.5rem;
+				border-left: 3px solid #10b981;
+				font-family: monospace;
+			}
+			.load-time-display.loaded {
+				background: #dbeafe;
+				border-left-color: #3b82f6;
+			}
+
 			/* Named breakpoint CSS custom property */
 			:root {
 				--lazy-img-mq: small;
@@ -50,8 +62,8 @@
 		<header>
 			<h1>&lt;lazy-img&gt;</h1>
 			<p>
-				Custom element to lazy load an image based on screen size or
-				container size. See the
+				Custom element to lazy load images based on container size,
+				viewport size, or scroll position. See the
 				<a
 					href="https://github.com/aarongustafson/lazy-img/blob/main/README.md"
 					>README</a
@@ -293,6 +305,151 @@
 									>Current viewport width:
 									<span id="viewport-width"></span>px</small
 								>
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- View Mode Example -->
+			<section id="view-mode-example">
+				<h2>View Mode (Scroll-Based Loading)</h2>
+				<p>
+					Image loads when scrolled into view using
+					IntersectionObserver. Uses <code>query="view"</code> for
+					scroll-based lazy loading. This is the classic "lazy load as
+					you scroll" pattern — images only load when they become
+					visible or are about to become visible.
+				</p>
+				<p
+					style="
+						background: #e0f2fe;
+						padding: 0.75rem;
+						border-radius: 4px;
+					"
+				>
+					<strong>Try it:</strong> Scroll down to see images load as
+					they enter the viewport. The timing can be controlled with
+					<code>view-range-start</code>.
+				</p>
+
+				<div class="demo-section">
+					<h3>Basic View Mode (default: entry 0%)</h3>
+					<p>
+						Loads as soon as any part of the image enters the
+						viewport.
+					</p>
+					<div class="code-demo-pair">
+						<pre><code>&lt;lazy-img
+  src="https://picsum.photos/800/400?random=8"
+  alt="Scroll-based photo"
+  query="view"&gt;
+&lt;/lazy-img&gt;</code></pre>
+						<div class="demo">
+							<div
+								style="
+									height: 400px;
+									background: #f0f0f0;
+									display: flex;
+									align-items: center;
+									justify-content: center;
+									margin-bottom: 1rem;
+								"
+							>
+								<p>
+									👇 Scroll down to see the image below load
+								</p>
+							</div>
+							<lazy-img
+								id="view-demo-1"
+								src="https://picsum.photos/800/400?random=8"
+								alt="Scroll-based photo"
+								query="view"
+							>
+							</lazy-img>
+							<p id="view-status-1" class="load-time-display">
+								<small>Image not loaded yet</small>
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="demo-section">
+					<h3>Threshold-Based (entry 50%)</h3>
+					<p>Loads when 50% of the image is visible.</p>
+					<div class="code-demo-pair">
+						<pre><code>&lt;lazy-img
+  src="https://picsum.photos/800/400?random=9"
+  alt="Half-visible trigger"
+  query="view"
+  view-range-start="entry 50%"&gt;
+&lt;/lazy-img&gt;</code></pre>
+						<div class="demo">
+							<div
+								style="
+									height: 300px;
+									background: #f0f0f0;
+									display: flex;
+									align-items: center;
+									justify-content: center;
+									margin-bottom: 1rem;
+								"
+							>
+								<p>
+									👇 Scroll until 50% of the image is visible
+								</p>
+							</div>
+							<lazy-img
+								id="view-demo-2"
+								src="https://picsum.photos/800/400?random=9"
+								alt="Half-visible trigger"
+								query="view"
+								view-range-start="entry 50%"
+							>
+							</lazy-img>
+							<p id="view-status-2" class="load-time-display">
+								<small>Image not loaded yet</small>
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="demo-section">
+					<h3>Preload Before Visible (entry -200px)</h3>
+					<p>
+						Starts loading 200px before the image enters the
+						viewport (smooth UX).
+					</p>
+					<div class="code-demo-pair">
+						<pre><code>&lt;lazy-img
+  src="https://picsum.photos/800/400?random=10"
+  alt="Preloaded photo"
+  query="view"
+  view-range-start="entry -200px"&gt;
+&lt;/lazy-img&gt;</code></pre>
+						<div class="demo">
+							<div
+								style="
+									height: 400px;
+									background: #f0f0f0;
+									display: flex;
+									align-items: center;
+									justify-content: center;
+									margin-bottom: 1rem;
+								"
+							>
+								<p>👇 Image loads 200px before you see it</p>
+							</div>
+							<lazy-img
+								id="view-demo-3"
+								src="https://picsum.photos/800/400?random=10"
+								alt="Preloaded photo"
+								query="view"
+								view-range-start="entry -200px"
+							>
+							</lazy-img>
+							<p id="view-status-3" class="load-time-display">
+								<small>Image not loaded yet</small>
 							</p>
 						</div>
 					</div>
@@ -623,13 +780,53 @@ document.getElementById('event-demo')
 			<p>
 				This web component uses modern browser APIs and works in all
 				evergreen browsers. It requires JavaScript to be enabled and
-				uses the Custom Elements API and ResizeObserver (for container
-				queries).
+				uses the Custom Elements API, ResizeObserver (for container
+				queries), and IntersectionObserver (for view mode).
 			</p>
 		</footer>
 
 		<script src="../define.js" type="module"></script>
 		<script>
+			// Track initialization time for each lazy-img element
+			const initTimes = new WeakMap();
+
+			// Store init time when elements are created
+			document.addEventListener('DOMContentLoaded', () => {
+				const lazyImages = document.querySelectorAll('lazy-img');
+				lazyImages.forEach((img) => {
+					initTimes.set(img, performance.now());
+				});
+			});
+
+			// Track load times for view mode demos
+			function setupLoadTimeTracking(imgId, statusId) {
+				const img = document.getElementById(imgId);
+				const status = document.getElementById(statusId);
+
+				if (img && status) {
+					const initTime = performance.now();
+					initTimes.set(img, initTime);
+
+					img.addEventListener('lazy-img:loaded', (e) => {
+						const loadTime = performance.now();
+						const elapsed = ((loadTime - initTime) / 1000).toFixed(
+							2,
+						);
+						status.innerHTML = `<small>✅ Loaded after <strong>${elapsed}s</strong> - ${e.detail.src}</small>`;
+						status.classList.add('loaded');
+						console.log(
+							`${imgId} loaded after ${elapsed}s:`,
+							e.detail.src,
+						);
+					});
+				}
+			}
+
+			// Set up tracking for view mode demos
+			setupLoadTimeTracking('view-demo-1', 'view-status-1');
+			setupLoadTimeTracking('view-demo-2', 'view-status-2');
+			setupLoadTimeTracking('view-demo-3', 'view-status-3');
+
 			// Update viewport width display
 			function updateViewportWidth() {
 				const el = document.getElementById('viewport-width');
