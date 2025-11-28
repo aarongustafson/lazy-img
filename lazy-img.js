@@ -38,9 +38,15 @@ export class LazyImgElement extends HTMLElement {
 		this._resizeObserver = null;
 		this._throttleTimeout = null;
 		this._throttleDelay = 150; // milliseconds
+		this._namedBreakpoints = null;
+		this._minInlineSize = null;
 	}
 
 	connectedCallback() {
+		// Initialize cached attribute values
+		this._namedBreakpoints = this.getAttribute('named-breakpoints');
+		this._minInlineSize = this.getAttribute('min-inline-size');
+
 		this.render();
 		this._setupResizeWatcher();
 	}
@@ -51,6 +57,13 @@ export class LazyImgElement extends HTMLElement {
 
 	attributeChangedCallback(name, oldValue, newValue) {
 		if (oldValue !== newValue) {
+			// Update cached attribute values
+			if (name === 'named-breakpoints') {
+				this._namedBreakpoints = newValue;
+			} else if (name === 'min-inline-size') {
+				this._minInlineSize = newValue;
+			}
+
 			// If already loaded, don't reload
 			if (this._loaded && name !== 'query') {
 				return;
@@ -123,14 +136,12 @@ export class LazyImgElement extends HTMLElement {
 		}, this._throttleDelay);
 	}
 
-	_shouldLoad() {
-		const namedBreakpoints = this.getAttribute('named-breakpoints');
-		const minInlineSize = this.getAttribute('min-inline-size');
+	_updateQualifies() {
 		let qualifies = false;
 
 		// Support named breakpoints via --lazy-img-mq CSS custom property
-		if (namedBreakpoints) {
-			const breakpoints = namedBreakpoints
+		if (this._namedBreakpoints) {
+			const breakpoints = this._namedBreakpoints
 				.split(',')
 				.map((bp) => bp.trim());
 
@@ -147,9 +158,9 @@ export class LazyImgElement extends HTMLElement {
 			} else {
 				qualifies = breakpoints.includes(activeMQ);
 			}
-		} else if (minInlineSize) {
+		} else if (this._minInlineSize) {
 			// Support pixel-based min-inline-size
-			const minSize = parseInt(minInlineSize, 10);
+			const minSize = parseInt(this._minInlineSize, 10);
 			if (isNaN(minSize)) {
 				console.warn(
 					'lazy-img: min-inline-size must be a valid number',
@@ -170,11 +181,22 @@ export class LazyImgElement extends HTMLElement {
 			this.removeAttribute('qualifies');
 		}
 
+		return qualifies;
+	}
+
+	_shouldLoad() {
+		// Update qualifies attribute based on current conditions
+		const qualifies = this._updateQualifies();
+
 		// Only load if qualifies and not already loaded
 		return qualifies && !this._loaded;
 	}
 
 	_checkAndLoad() {
+		// Always update qualifies attribute
+		this._updateQualifies();
+
+		// Only attempt to load if not already loaded
 		if (this._shouldLoad() && !this._loaded) {
 			this._loadImage();
 		}
