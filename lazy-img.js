@@ -296,7 +296,7 @@ export class LazyImgElement extends HTMLElement {
 		this._queryType = 'container'; // Cache query type
 		this._parsedBreakpoints = null; // Cache parsed breakpoint array
 		this._styleInjected = false; // Track if CSS has been injected
-		
+
 		// Create style element once but don't inject until needed
 		this._styleElement = document.createElement('style');
 		this._styleElement.textContent = `
