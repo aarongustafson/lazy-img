@@ -416,6 +416,35 @@ describe('LazyImgElement', () => {
 			expect(element.hasAttribute('qualifies')).toBe(false);
 		});
 
+		it('should restore qualifies when resized back above threshold after loading', () => {
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('min-inline-size', '300');
+
+			// Initial state - below threshold
+			element._currentSize = 200;
+			element._checkAndLoad();
+			expect(element.hasAttribute('loaded')).toBe(false);
+			expect(element.hasAttribute('qualifies')).toBe(false);
+
+			// Resize above threshold - should load
+			element._currentSize = 400;
+			element._checkAndLoad();
+			expect(element.hasAttribute('loaded')).toBe(true);
+			expect(element.hasAttribute('qualifies')).toBe(true);
+
+			// Resize below threshold - qualifies should be removed
+			element._currentSize = 200;
+			element._checkAndLoad();
+			expect(element.hasAttribute('loaded')).toBe(true);
+			expect(element.hasAttribute('qualifies')).toBe(false);
+
+			// Resize above threshold again - qualifies should come back
+			element._currentSize = 400;
+			element._checkAndLoad();
+			expect(element.hasAttribute('loaded')).toBe(true);
+			expect(element.hasAttribute('qualifies')).toBe(true);
+		});
+
 		it('should always set qualifies when no conditions are specified', () => {
 			element.setAttribute('src', 'test.jpg');
 
