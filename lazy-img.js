@@ -16,9 +16,10 @@
  * @attr {string} referrerpolicy - Referrer policy for the image request
  * @attr {string} min-inline-size - Minimum inline size (in pixels) to load the image
  * @attr {string} named-breakpoints - Comma-separated list of named breakpoints (reads from --lazy-img-mq CSS custom property)
- * @attr {string} query - Query type: "media" (default) or "container" for container queries
+ * @attr {string} query - Query type: "container" (default), "media", or "view" for IntersectionObserver
+ * @attr {string} view-range-start - When to load in view mode: "entry X%" for threshold or "entry -Xpx" for preload margin (default: "entry 0%")
  * @attr {boolean} loaded - Reflects whether the image has been loaded (read-only, set by component)
- * @attr {boolean} qualifies - Reflects whether element currently meets conditions to display (read-only, set by component)
+ * @attr {boolean} qualifies - Reflects whether element currently meets conditions to display (read-only, set by component, not used in view mode)
  *
  * @fires lazy-img:loaded - Dispatched when the image has been loaded
  *
@@ -56,6 +57,123 @@ function removeWindowResizeCallback(callback) {
 	}
 }
 
+// Shared IntersectionObserver registry to improve performance when multiple
+// lazy-img elements share the same view configuration
+const sharedIntersectionObservers = new Map();
+
+/**
+ * Parses view-range-start attribute value into IntersectionObserver options
+ * Supports:
+ * - "entry X%" → threshold (e.g., "entry 25%" = 25% visible)
+ * - "entry -Xpx" → rootMargin (e.g., "entry -200px" = load 200px before entering)
+ * @param {string} rangeValue - The view-range-start attribute value
+ * @returns {Object} Object with { rootMargin, threshold }
+ */
+function parseViewRange(rangeValue) {
+	const defaults = { rootMargin: '0px', threshold: 0 };
+
+	if (!rangeValue) {
+		return defaults;
+	}
+
+	const trimmed = rangeValue.trim();
+
+	// Match "entry X%" pattern for threshold
+	const percentMatch = trimmed.match(/^entry\s+(-?\d+(?:\.\d+)?)%$/);
+	if (percentMatch) {
+		const percent = parseFloat(percentMatch[1]);
+		if (percent >= 0 && percent <= 100) {
+			return { rootMargin: '0px', threshold: percent / 100 };
+		}
+		console.warn(
+			`lazy-img: view-range-start percentage must be between 0 and 100, got ${percent}%`,
+		);
+		return defaults;
+	}
+
+	// Match "entry -Xpx" pattern for rootMargin (preload)
+	const pxMatch = trimmed.match(/^entry\s+(-\d+)px$/);
+	if (pxMatch) {
+		const pixels = parseInt(pxMatch[1], 10);
+		// Negative value means preload (expand bottom margin)
+		return {
+			rootMargin: `0px 0px ${Math.abs(pixels)}px 0px`,
+			threshold: 0,
+		};
+	}
+
+	console.warn(
+		`lazy-img: invalid view-range-start format "${rangeValue}", expected "entry X%" or "entry -Xpx"`,
+	);
+	return defaults;
+}
+
+/**
+ * Gets a config key for shared IntersectionObserver lookup
+ * @param {string} rootMargin
+ * @param {number} threshold
+ * @returns {string} Unique key for this configuration
+ */
+function getIntersectionObserverKey(rootMargin, threshold) {
+	return `${rootMargin}|${threshold}`;
+}
+
+/**
+ * Gets or creates a shared IntersectionObserver for a configuration
+ * @param {string} rootMargin
+ * @param {number} threshold
+ * @returns {Object} Object with observer and callbacks Set
+ */
+function getSharedIntersectionObserver(rootMargin, threshold) {
+	const key = getIntersectionObserverKey(rootMargin, threshold);
+
+	if (!sharedIntersectionObservers.has(key)) {
+		const callbacks = new Set();
+		const observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						// Call all registered callbacks for this observer
+						callbacks.forEach((callback) => callback(entry));
+					}
+				});
+			},
+			{ rootMargin, threshold },
+		);
+		sharedIntersectionObservers.set(key, { observer, callbacks });
+	}
+
+	return sharedIntersectionObservers.get(key);
+}
+
+/**
+ * Removes a callback from a shared IntersectionObserver
+ * @param {string} rootMargin
+ * @param {number} threshold
+ * @param {Element} target - The observed element
+ * @param {Function} callback - The callback to remove
+ */
+function removeSharedIntersectionObserver(
+	rootMargin,
+	threshold,
+	target,
+	callback,
+) {
+	const key = getIntersectionObserverKey(rootMargin, threshold);
+	const shared = sharedIntersectionObservers.get(key);
+
+	if (shared) {
+		shared.callbacks.delete(callback);
+		shared.observer.unobserve(target);
+
+		// Clean up if no more callbacks
+		if (shared.callbacks.size === 0) {
+			shared.observer.disconnect();
+			sharedIntersectionObservers.delete(key);
+		}
+	}
+}
+
 export class LazyImgElement extends HTMLElement {
 	// Attributes that get passed through to the inner <img> element
 	static IMG_ATTRIBUTES = [
@@ -80,6 +198,7 @@ export class LazyImgElement extends HTMLElement {
 		'min-inline-size',
 		'named-breakpoints',
 		'query',
+		'view-range-start',
 	];
 
 	static get observedAttributes() {
@@ -228,7 +347,34 @@ export class LazyImgElement extends HTMLElement {
 	_setupResizeWatcher() {
 		const queryType = this.getAttribute('query') || 'container';
 
-		if (queryType === 'container') {
+		if (queryType === 'view') {
+			// Use shared IntersectionObserver for view-based loading
+			const viewRangeStart =
+				this.getAttribute('view-range-start') || 'entry 0%';
+			const { rootMargin, threshold } = parseViewRange(viewRangeStart);
+
+			// Store config for cleanup
+			this._intersectionConfig = { rootMargin, threshold };
+
+			// Create callback for this instance - load once and unobserve
+			this._intersectionCallback = (entry) => {
+				this._loadImage();
+				// Cleanup after loading
+				removeSharedIntersectionObserver(
+					rootMargin,
+					threshold,
+					this,
+					this._intersectionCallback,
+				);
+				this._intersectionCallback = null;
+				this._intersectionConfig = null;
+			};
+
+			// Register with shared observer
+			const shared = getSharedIntersectionObserver(rootMargin, threshold);
+			shared.callbacks.add(this._intersectionCallback);
+			shared.observer.observe(this);
+		} else if (queryType === 'container') {
 			// Use shared ResizeObserver for container queries to improve performance
 			// when multiple lazy-img elements share the same parent
 			const targetElement = this.parentElement || this;
@@ -261,10 +407,25 @@ export class LazyImgElement extends HTMLElement {
 			// Initial check
 			this._currentSize = window.innerWidth;
 		}
-		this._checkAndLoad();
+
+		// Only check and load for non-view modes
+		if (queryType !== 'view') {
+			this._checkAndLoad();
+		}
 	}
 
 	_cleanupResizeWatcher() {
+		// Cleanup shared IntersectionObserver callback
+		if (this._intersectionCallback && this._intersectionConfig) {
+			removeSharedIntersectionObserver(
+				this._intersectionConfig.rootMargin,
+				this._intersectionConfig.threshold,
+				this,
+				this._intersectionCallback,
+			);
+			this._intersectionCallback = null;
+			this._intersectionConfig = null;
+		}
 		// Cleanup shared ResizeObserver callback
 		if (this._observedTarget && this._resizeCallback) {
 			LazyImgElement._removeSharedObserver(
@@ -297,6 +458,12 @@ export class LazyImgElement extends HTMLElement {
 	}
 
 	_updateQualifies() {
+		// Skip qualifies in view mode - it's a one-time intersection trigger
+		const queryType = this.getAttribute('query') || 'container';
+		if (queryType === 'view') {
+			return true; // Always return true for view mode, but don't set attribute
+		}
+
 		let qualifies = false;
 
 		// Support named breakpoints via --lazy-img-mq CSS custom property
@@ -387,11 +554,14 @@ export class LazyImgElement extends HTMLElement {
 		}
 
 		let imageHTML = '';
+		const queryType = this.getAttribute('query') || 'container';
 
 		// Only render image if loaded or if no loading conditions are set
+		// For view mode, only render when loaded (IntersectionObserver controls loading)
 		if (
 			this._loaded ||
-			(!this.getAttribute('min-inline-size') &&
+			(queryType !== 'view' &&
+				!this.getAttribute('min-inline-size') &&
 				!this.getAttribute('named-breakpoints'))
 		) {
 			const imgAttrs = this._getImgAttributes();
