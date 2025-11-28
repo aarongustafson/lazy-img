@@ -7,6 +7,13 @@
  * @attr {string} alt - Alternative text for the image
  * @attr {string} srcset - Responsive image srcset attribute
  * @attr {string} sizes - Responsive image sizes attribute
+ * @attr {string} width - Intrinsic width of the image (helps prevent layout shift)
+ * @attr {string} height - Intrinsic height of the image (helps prevent layout shift)
+ * @attr {string} loading - Native lazy loading hint ("lazy" or "eager")
+ * @attr {string} decoding - Image decoding hint ("async", "sync", or "auto")
+ * @attr {string} fetchpriority - Resource fetch priority ("high", "low", or "auto")
+ * @attr {string} crossorigin - CORS settings ("anonymous" or "use-credentials")
+ * @attr {string} referrerpolicy - Referrer policy for the image request
  * @attr {string} min-inline-size - Minimum inline size (in pixels) to load the image
  * @attr {string} named-breakpoints - Comma-separated list of named breakpoints (reads from --lazy-img-mq CSS custom property)
  * @attr {string} query - Query type: "media" (default) or "container" for container queries
@@ -19,15 +26,35 @@
  * @cssprop --lazy-img-mq - Named media query identifier (set at :root level via media queries)
  */
 export class LazyImgElement extends HTMLElement {
+	// Attributes that get passed through to the inner <img> element
+	static IMG_ATTRIBUTES = [
+		'src',
+		'alt',
+		'srcset',
+		'sizes',
+		'width',
+		'height',
+		'loading',
+		'decoding',
+		'fetchpriority',
+		'crossorigin',
+		'referrerpolicy',
+	];
+
+	// Source attributes that shouldn't change after image is loaded
+	static SOURCE_ATTRIBUTES = ['src', 'srcset', 'sizes'];
+
+	// Attributes that control the lazy-img behavior
+	static CONFIG_ATTRIBUTES = [
+		'min-inline-size',
+		'named-breakpoints',
+		'query',
+	];
+
 	static get observedAttributes() {
 		return [
-			'src',
-			'alt',
-			'srcset',
-			'sizes',
-			'min-inline-size',
-			'named-breakpoints',
-			'query',
+			...LazyImgElement.IMG_ATTRIBUTES,
+			...LazyImgElement.CONFIG_ATTRIBUTES,
 		];
 	}
 
@@ -41,6 +68,35 @@ export class LazyImgElement extends HTMLElement {
 		const div = document.createElement('div');
 		div.textContent = text;
 		return div.innerHTML;
+	}
+
+	/**
+	 * Converts attribute object to HTML attribute string
+	 * @param {Object} attrs - Attribute key-value pairs
+	 * @returns {string} HTML attribute string
+	 */
+	static _buildAttributeString(attrs) {
+		return Object.entries(attrs)
+			.map(([key, value]) => `${key}="${value}"`)
+			.join(' ');
+	}
+
+	/**
+	 * Gathers all img-specific attributes from the host element
+	 * @returns {Object} Object with attribute names as keys and escaped values
+	 */
+	_getImgAttributes() {
+		const attrs = {};
+		for (const attr of LazyImgElement.IMG_ATTRIBUTES) {
+			const value = this.getAttribute(attr);
+			if (value !== null) {
+				attrs[attr] = LazyImgElement.escapeHtml(value);
+			} else if (attr === 'alt') {
+				// Always include alt attribute for accessibility, default to empty string
+				attrs.alt = '';
+			}
+		}
+		return attrs;
 	}
 
 	constructor() {
@@ -76,15 +132,27 @@ export class LazyImgElement extends HTMLElement {
 				this._minInlineSize = newValue;
 			}
 
-			// If already loaded, don't reload
+			// If already loaded and it's a source attribute change, don't allow it
+			if (
+				this._loaded &&
+				LazyImgElement.SOURCE_ATTRIBUTES.includes(name)
+			) {
+				return;
+			}
+
+			// If already loaded and it's a non-source img attribute change, re-render
+			if (this._loaded && LazyImgElement.IMG_ATTRIBUTES.includes(name)) {
+				this.render();
+				return;
+			}
+
+			// If already loaded and it's a config change, don't reload
 			if (this._loaded && name !== 'query') {
 				return;
 			}
 			this.render();
 			// Reset and recheck if configuration changed
-			if (
-				['min-inline-size', 'named-breakpoints', 'query'].includes(name)
-			) {
+			if (LazyImgElement.CONFIG_ATTRIBUTES.includes(name)) {
 				this._loaded = false;
 				this._checkAndLoad();
 			}
@@ -234,10 +302,6 @@ export class LazyImgElement extends HTMLElement {
 
 	render() {
 		const src = this.getAttribute('src');
-		const alt = this.getAttribute('alt') || '';
-		const srcset = this.getAttribute('srcset');
-		const sizes = this.getAttribute('sizes');
-
 		let imageHTML = '';
 
 		// Only render image if loaded or if no loading conditions are set
@@ -247,12 +311,10 @@ export class LazyImgElement extends HTMLElement {
 				!this.getAttribute('named-breakpoints'))
 		) {
 			if (src) {
-				imageHTML = `<img
-					src="${LazyImgElement.escapeHtml(src)}"
-					alt="${LazyImgElement.escapeHtml(alt)}"
-					${srcset ? `srcset="${LazyImgElement.escapeHtml(srcset)}"` : ''}
-					${sizes ? `sizes="${LazyImgElement.escapeHtml(sizes)}"` : ''}
-				/>`;
+				const imgAttrs = this._getImgAttributes();
+				const attrString =
+					LazyImgElement._buildAttributeString(imgAttrs);
+				imageHTML = `<img ${attrString} />`;
 			}
 		}
 
