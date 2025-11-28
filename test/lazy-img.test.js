@@ -318,16 +318,16 @@ describe('LazyImgElement', () => {
 			// Create two lazy-img elements with the same parent
 			const element1 = document.createElement('lazy-img');
 			const element2 = document.createElement('lazy-img');
-			
+
 			parent.appendChild(element1);
 			parent.appendChild(element2);
 
 			element1.setAttribute('src', 'test1.jpg');
 			element1.setAttribute('min-inline-size', '400');
-			
+
 			element2.setAttribute('src', 'test2.jpg');
 			element2.setAttribute('min-inline-size', '500');
-			
+
 			// Verify both are registered
 			expect(element1._observedTarget).toBe(parent);
 			expect(element2._observedTarget).toBe(parent);
