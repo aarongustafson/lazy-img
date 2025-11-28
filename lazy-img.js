@@ -31,6 +31,12 @@ export class LazyImgElement extends HTMLElement {
 		];
 	}
 
+	static getActiveMQ() {
+		return getComputedStyle(document.documentElement)
+			.getPropertyValue('--lazy-img-mq')
+			.trim();
+	}
+
 	constructor() {
 		super();
 		this.attachShadow({ mode: 'open' });
@@ -146,9 +152,7 @@ export class LazyImgElement extends HTMLElement {
 				.map((bp) => bp.trim());
 
 			// Read the current value of --lazy-img-mq from :root
-			const activeMQ = getComputedStyle(document.documentElement)
-				.getPropertyValue('--lazy-img-mq')
-				.trim();
+			const activeMQ = LazyImgElement.getActiveMQ();
 
 			if (!activeMQ) {
 				console.warn(
