@@ -10,6 +10,8 @@ Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-la
 
 For example, if you set `min-inline-size="768"`, mobile users will never download that image at all — saving their data and speeding up your page load.
 
+**Note on Resize Behavior:** Once an image is loaded, it remains loaded even if the viewport or container is resized below the threshold. This is intentional for performance — the component prevents unnecessary downloads, but doesn't unload images that are already in memory. Use the `loaded` and `qualifies` attributes to control visibility with CSS if needed.
+
 ## ✨ Features
 
 - **Container Queries**: Load images based on container width (default)
@@ -152,6 +154,8 @@ The image will load when the `--lazy-img-mq` custom property matches any of the 
 | `min-inline-size` | String (Number) | - | Minimum inline size in pixels to load the image |
 | `named-breakpoints` | String | - | Comma-separated list of named breakpoints (reads from `--lazy-img-mq` CSS custom property) |
 | `query` | String | `"container"` | Query type: `"container"` or `"media"` |
+| `loaded` | Boolean | - | **Read-only.** Reflects whether the image has been loaded |
+| `qualifies` | Boolean | - | **Read-only.** Reflects whether element currently meets conditions to display |
 
 ### Query Types
 
@@ -201,36 +205,36 @@ lazy-img {
 
 ## 🎯 Examples
 
-### Load Different Images at Different Breakpoints
+### Controlling Visibility with State Attributes
 
-You can use multiple `<lazy-img>` elements with different configurations:
+The `loaded` and `qualifies` attributes allow you to control visibility based on current conditions:
 
-```html
-<!-- Mobile: Load small image immediately -->
-<lazy-img
-  src="mobile-image.jpg"
-  alt="Mobile view"
-  class="mobile-only">
-</lazy-img>
+```css
+/* Hide images that loaded but no longer meet conditions (e.g., after rotation) */
+lazy-img[loaded]:not([qualifies]) {
+  display: none;
+}
 
-<!-- Tablet: Load at 768px viewport -->
-<lazy-img
-  src="tablet-image.jpg"
-  alt="Tablet view"
-  min-inline-size="768"
-  query="media"
-  class="tablet-only">
-</lazy-img>
+/* Show a placeholder for images that qualify but haven't loaded yet */
+lazy-img[qualifies]:not([loaded])::before {
+  content: "Loading...";
+  display: block;
+  padding: 2em;
+  background: #f0f0f0;
+  text-align: center;
+}
 
-<!-- Desktop: Load at 1024px viewport -->
-<lazy-img
-  src="desktop-image.jpg"
-  alt="Desktop view"
-  min-inline-size="1024"
-  query="media"
-  class="desktop-only">
-</lazy-img>
+/* Style images based on their qualification state */
+lazy-img[qualifies] {
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+lazy-img:not([qualifies]) {
+  opacity: 0.5;
+}
 ```
+
 
 ### Progressive Image Loading in Containers
 
@@ -371,4 +375,4 @@ Aaron Gustafson <aaron@easy-designs.net> (https://www.aaron-gustafson.com/)
 
 ## 🙏 Credits
 
-Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-lazy-images.js) concept, reimagined as a modern Custom Element.
+Based on my original [Easy Lazy Images](https://github.com/easy-designs/easy-lazy-images.js) concept, reimagined as a modern Custom Element.

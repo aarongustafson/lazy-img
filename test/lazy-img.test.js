@@ -347,4 +347,81 @@ describe('LazyImgElement', () => {
 			expect(style.textContent).toContain('--lazy-img-display');
 		});
 	});
+
+	describe('State attributes', () => {
+		it('should set loaded attribute when image loads', () => {
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('alt', 'Test');
+
+			// Initially should not have loaded attribute
+			expect(element.hasAttribute('loaded')).toBe(false);
+
+			// Trigger load
+			element._loadImage();
+
+			// Should now have loaded attribute
+			expect(element.hasAttribute('loaded')).toBe(true);
+		});
+
+		it('should set qualifies attribute when conditions are met', () => {
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('min-inline-size', '300');
+
+			// Set current size below threshold
+			element._currentSize = 200;
+			element._checkAndLoad();
+
+			// Should not qualify
+			expect(element.hasAttribute('qualifies')).toBe(false);
+
+			// Set current size above threshold
+			element._currentSize = 400;
+			element._checkAndLoad();
+
+			// Should qualify
+			expect(element.hasAttribute('qualifies')).toBe(true);
+		});
+
+		it('should remove qualifies attribute when conditions are no longer met', () => {
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('min-inline-size', '300');
+
+			// Set current size above threshold
+			element._currentSize = 400;
+			element._checkAndLoad();
+			expect(element.hasAttribute('qualifies')).toBe(true);
+
+			// Set current size below threshold
+			element._currentSize = 200;
+			element._checkAndLoad();
+			expect(element.hasAttribute('qualifies')).toBe(false);
+		});
+
+		it('should maintain loaded attribute even when qualifies changes', () => {
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('min-inline-size', '300');
+
+			// Load the image
+			element._currentSize = 400;
+			element._checkAndLoad();
+			expect(element.hasAttribute('loaded')).toBe(true);
+			expect(element.hasAttribute('qualifies')).toBe(true);
+
+			// Resize below threshold
+			element._currentSize = 200;
+			element._checkAndLoad();
+
+			// loaded should persist, qualifies should be removed
+			expect(element.hasAttribute('loaded')).toBe(true);
+			expect(element.hasAttribute('qualifies')).toBe(false);
+		});
+
+		it('should always set qualifies when no conditions are specified', () => {
+			element.setAttribute('src', 'test.jpg');
+
+			element._checkAndLoad();
+
+			expect(element.hasAttribute('qualifies')).toBe(true);
+		});
+	});
 });

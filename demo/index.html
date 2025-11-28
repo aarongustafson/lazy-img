@@ -72,6 +72,21 @@
 				This saves bandwidth and improves performance for users on
 				smaller devices or slower connections.
 			</p>
+			<p
+				style="
+					background: #f0fdf4;
+					padding: 1rem;
+					border-left: 4px solid #10b981;
+				"
+			>
+				<strong>Note on Resize Behavior:</strong> Once an image is
+				loaded, it remains loaded even if the viewport or container is
+				resized below the threshold. This is intentional for performance
+				— the component prevents unnecessary downloads, but doesn't
+				unload images that are already in memory. Use the
+				<code>loaded</code> and <code>qualifies</code> attributes to
+				control visibility with CSS if needed.
+			</p>
 		</header>
 
 		<main>
@@ -461,6 +476,110 @@ document.getElementById('event-demo')
 				</div>
 			</section>
 
+			<!-- State Attributes Example -->
+			<section>
+				<h2>State Attributes</h2>
+				<p>
+					The component provides two boolean attributes to track
+					state:
+					<code>loaded</code> (has the image been loaded?) and
+					<code>qualifies</code> (does it currently meet conditions to
+					show?). These allow you to control visibility with CSS.
+				</p>
+
+				<div class="demo-section">
+					<h3>Controlling Visibility</h3>
+					<p>
+						This example hides images that loaded but no longer
+						qualify (e.g., after device rotation or resize).
+					</p>
+
+					<style>
+						/* Demo-specific styles for state attributes */
+						#state-demo-container
+							lazy-img[loaded]:not([qualifies]) {
+							display: none;
+						}
+						#state-demo-container
+							lazy-img[qualifies]:not([loaded])::before {
+							content: '⏳ Waiting to load...';
+							display: block;
+							padding: 2em;
+							background: #f0f0f0;
+							text-align: center;
+							color: #666;
+						}
+						#state-demo-container .state-indicator {
+							font-family: monospace;
+							font-size: 0.85em;
+							padding: 0.5rem;
+							background: #f9fafb;
+							margin-top: 0.5rem;
+							border-left: 3px solid #3b82f6;
+						}
+					</style>
+
+					<div class="code-demo-pair">
+						<pre><code>&lt;style&gt;
+  /* Hide loaded images that don't qualify */
+  lazy-img[loaded]:not([qualifies]) {
+    display: none;
+  }
+
+  /* Show placeholder when qualifies but not loaded */
+  lazy-img[qualifies]:not([loaded])::before {
+    content: '⏳ Waiting to load...';
+    display: block;
+    padding: 2em;
+    background: #f0f0f0;
+  }
+&lt;/style&gt;
+
+&lt;lazy-img
+  src="https://picsum.photos/600/300"
+  alt="State demo"
+  min-inline-size="400"&gt;
+&lt;/lazy-img&gt;</code></pre>
+						<div class="demo">
+							<div
+								id="state-demo-container"
+								class="demo-container small"
+								style="
+									resize: horizontal;
+									overflow: auto;
+									width: 300px;
+								"
+							>
+								<div class="container-info">
+									📏 Current width:
+									<strong
+										><span
+											class="width-tracker"
+											data-container="state-demo-container"
+											>300</span
+										>px</strong
+									>
+									/ Min: 400px
+								</div>
+								<lazy-img
+									id="state-demo-img"
+									src="https://picsum.photos/600/300?random=7"
+									alt="State attributes demo"
+									min-inline-size="400"
+								>
+								</lazy-img>
+								<div class="state-indicator">
+									State:
+									<strong id="state-display"
+										>Not loaded, doesn't qualify</strong
+									>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
 			<!-- API Reference -->
 			<section class="api-reference">
 				<h2>API Reference</h2>
@@ -544,6 +663,41 @@ document.getElementById('event-demo')
 					}
 					console.log('Image loaded:', e.detail.src);
 				});
+			}
+
+			// State attributes demo
+			const stateDemoImg = document.getElementById('state-demo-img');
+			const stateDisplay = document.getElementById('state-display');
+
+			function updateStateDisplay() {
+				if (stateDemoImg && stateDisplay) {
+					const loaded = stateDemoImg.hasAttribute('loaded');
+					const qualifies = stateDemoImg.hasAttribute('qualifies');
+
+					let stateText = '';
+					if (loaded && qualifies) {
+						stateText = '✅ Loaded & qualifies (visible)';
+					} else if (loaded && !qualifies) {
+						stateText =
+							"⚠️ Loaded but doesn't qualify (hidden by CSS)";
+					} else if (!loaded && qualifies) {
+						stateText = '🔄 Not loaded yet, but qualifies';
+					} else {
+						stateText = "❌ Not loaded, doesn't qualify";
+					}
+
+					stateDisplay.textContent = stateText;
+				}
+			}
+
+			// Use MutationObserver to watch for attribute changes
+			if (stateDemoImg) {
+				const observer = new MutationObserver(updateStateDisplay);
+				observer.observe(stateDemoImg, {
+					attributes: true,
+					attributeFilter: ['loaded', 'qualifies'],
+				});
+				updateStateDisplay(); // Initial update
 			}
 		</script>
 	</body>

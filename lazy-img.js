@@ -10,6 +10,8 @@
  * @attr {string} min-inline-size - Minimum inline size (in pixels) to load the image
  * @attr {string} named-breakpoints - Comma-separated list of named breakpoints (reads from --lazy-img-mq CSS custom property)
  * @attr {string} query - Query type: "media" (default) or "container" for container queries
+ * @attr {boolean} loaded - Reflects whether the image has been loaded (read-only, set by component)
+ * @attr {boolean} qualifies - Reflects whether element currently meets conditions to display (read-only, set by component)
  *
  * @fires lazy-img:loaded - Dispatched when the image has been loaded
  *
@@ -122,13 +124,9 @@ export class LazyImgElement extends HTMLElement {
 	}
 
 	_shouldLoad() {
-		// Already loaded
-		if (this._loaded) {
-			return false;
-		}
-
 		const namedBreakpoints = this.getAttribute('named-breakpoints');
 		const minInlineSize = this.getAttribute('min-inline-size');
+		let qualifies = false;
 
 		// Support named breakpoints via --lazy-img-mq CSS custom property
 		if (namedBreakpoints) {
@@ -145,26 +143,35 @@ export class LazyImgElement extends HTMLElement {
 				console.warn(
 					'lazy-img: named-breakpoints requires --lazy-img-mq CSS custom property to be set on :root',
 				);
-				return false;
+				qualifies = false;
+			} else {
+				qualifies = breakpoints.includes(activeMQ);
 			}
-
-			return breakpoints.includes(activeMQ);
-		}
-
-		// Support pixel-based min-inline-size
-		if (minInlineSize) {
+		} else if (minInlineSize) {
+			// Support pixel-based min-inline-size
 			const minSize = parseInt(minInlineSize, 10);
 			if (isNaN(minSize)) {
 				console.warn(
 					'lazy-img: min-inline-size must be a valid number',
 				);
-				return false;
+				qualifies = false;
+			} else {
+				qualifies = (this._currentSize || 0) >= minSize;
 			}
-			return (this._currentSize || 0) >= minSize;
+		} else {
+			// If neither is specified, always qualifies
+			qualifies = true;
 		}
 
-		// If neither is specified, load immediately
-		return true;
+		// Update qualifies attribute
+		if (qualifies) {
+			this.setAttribute('qualifies', '');
+		} else {
+			this.removeAttribute('qualifies');
+		}
+
+		// Only load if qualifies and not already loaded
+		return qualifies && !this._loaded;
 	}
 
 	_checkAndLoad() {
@@ -180,6 +187,7 @@ export class LazyImgElement extends HTMLElement {
 		}
 
 		this._loaded = true;
+		this.setAttribute('loaded', '');
 		this.render();
 
 		// Dispatch loaded event
