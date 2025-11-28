@@ -12,16 +12,17 @@ Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-la
 
 For example, if you set `min-inline-size="768"`, mobile users will never download that image at all — saving their data and speeding up your page load.
 
-**Note on Resize Behavior:** Once an image is loaded, it remains loaded even if the viewport or container is resized below the threshold. This is intentional for performance — the component prevents unnecessary downloads, but doesn't unload images that are already in memory. Use the [`loaded` and `qualifies` attributes](#controlling-visibility-with-state-attributes) to control visibility with CSS if needed. — [Demo](https://aarongustafson.github.io/lazy-img/demo/#state-attributes)
+**Note on Resize Behavior:** Once an image is loaded, it remains loaded even if the viewport or container is resized below the threshold. This is intentional for performance — the component prevents unnecessary downloads, but doesn't unload images that are already in memory. Use the [`loaded` and `qualifies` attributes](#controlling-visibility-with-state-attributes) to control visibility with CSS if needed.
 
 ## Features
 
-- **[Container Queries](#container-query-default)**: Load images based on container width (default) — [Demo](https://aarongustafson.github.io/lazy-img/demo/#container-query-example)
-- **[Media Queries](#media-query)**: Load images based on viewport width — [Demo](https://aarongustafson.github.io/lazy-img/demo/#media-query-example)
-- **[Named Breakpoints](#named-breakpoints)**: Support for named breakpoints via CSS custom properties — [Demo](https://aarongustafson.github.io/lazy-img/demo/#named-breakpoints)
-- **[Responsive Images](#responsive-images)**: Full support for `srcset` and `sizes` — [Demo](https://aarongustafson.github.io/lazy-img/demo/#responsive-images)
+- **[Container Queries](#container-query-default)**: Load images based on container width (default)
+- **[Media Queries](#media-query)**: Load images based on viewport width
+- **[View-Based Loading](#view-mode-intersectionobserver)**: Load images when they enter the viewport using IntersectionObserver
+- **[Named Breakpoints](#named-breakpoints)**: Support for named breakpoints via CSS custom properties
+- **[Responsive Images](#responsive-images)**: Full support for `srcset` and `sizes`
 - **Throttled Resize**: Efficient resize handling to prevent performance issues
-- **[Event-Driven](#events)**: Dispatches events when images load — [Demo](https://aarongustafson.github.io/lazy-img/demo/#events)
+- **[Event-Driven](#events)**: Dispatches events when images load
 - **Zero Dependencies**: No external libraries required
 - **Shadow DOM**: Fully encapsulated with CSS custom properties
 
@@ -97,6 +98,48 @@ Load an image based on viewport width:
 ```
 
 The image will load when the browser window is at least 768px wide.
+
+### View Mode (IntersectionObserver)
+
+Load images when they scroll into view using IntersectionObserver:
+
+```html
+<lazy-img
+  src="image.jpg"
+  alt="Loads when scrolled into view"
+  query="view">
+</lazy-img>
+```
+
+The image will load when it enters the viewport. The default behavior (`view-range-start="entry 0%"`) loads as soon as any part of the image is visible.
+
+#### Control When Images Load
+
+**Load when 50% visible:**
+```html
+<lazy-img
+  src="image.jpg"
+  alt="Loads when half visible"
+  query="view"
+  view-range-start="entry 50%">
+</lazy-img>
+```
+
+**Preload before entering viewport:**
+```html
+<lazy-img
+  src="image.jpg"
+  alt="Preloads 200px before visible"
+  query="view"
+  view-range-start="entry -200px">
+</lazy-img>
+```
+
+The `view-range-start` attribute uses scroll-driven animation syntax:
+- `"entry X%"` - Load when X% of the element is visible (e.g., `"entry 25%"` = 25% visible)
+- `"entry -Xpx"` - Preload X pixels before entering viewport (e.g., `"entry -300px"` = load 300px before visible)
+
+**Note:** Unlike container or media query modes, view mode doesn't use the `qualifies` attribute. Images load once when the intersection condition is met and remain loaded.
 
 ### Responsive Images
 
@@ -177,21 +220,23 @@ The image will load when the `--lazy-img-mq` custom property matches any of the 
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `min-inline-size` | String (Number) | - | Minimum inline size in pixels to load the image |
-| `named-breakpoints` | String | - | Comma-separated list of named breakpoints (reads from `--lazy-img-mq` CSS custom property) |
-| `query` | String | `"container"` | Query type: `"container"` or `"media"` |
+| `min-inline-size` | String (Number) | - | Minimum inline size in pixels to load the image (ignored in view mode) |
+| `named-breakpoints` | String | - | Comma-separated list of named breakpoints (reads from `--lazy-img-mq` CSS custom property, ignored in view mode) |
+| `query` | String | `"container"` | Query type: `"container"`, `"media"`, or `"view"` |
+| `view-range-start` | String | `"entry 0%"` | When to load in view mode: `"entry X%"` for threshold or `"entry -Xpx"` for preload margin |
 
 #### State Attributes (read-only)
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
 | `loaded` | Boolean | Reflects whether the image has been loaded |
-| `qualifies` | Boolean | Reflects whether element currently meets conditions to display |
+| `qualifies` | Boolean | Reflects whether element currently meets conditions to display (not used in view mode) |
 
 ### Query Types
 
 - **`container`** (default): Uses ResizeObserver to watch the element's container size
 - **`media`**: Uses window resize events to watch viewport size
+- **`view`**: Uses IntersectionObserver to watch when element enters viewport
 
 ### Events
 
@@ -394,15 +439,27 @@ If you don't specify `min-inline-size` or `named-breakpoints`, the image loads i
 </lazy-img>
 ```
 
+### Scroll-Based Loading
+
+```html
+<lazy-img
+  src="image.jpg"
+  alt="Scroll-based"
+  query="view"
+  view-range-start="entry -100px">
+</lazy-img>
+```
+
 ## Browser Support
 
 Works in all modern browsers supporting:
 - Custom Elements v1
 - Shadow DOM v1
 - ResizeObserver (for container queries)
+- IntersectionObserver (for view mode)
 - ES Modules
 
-For legacy browser support, consider polyfills for Custom Elements and ResizeObserver.
+For legacy browser support, consider polyfills for Custom Elements, ResizeObserver, and IntersectionObserver.
 
 ## Migration from Easy Lazy Images
 
@@ -442,6 +499,7 @@ Key differences:
 - **Throttled Resize**: Resize events are throttled to 150ms to prevent excessive checks
 - **Shared ResizeObserver**: Multiple `lazy-img` elements observing the same parent container share a single `ResizeObserver` instance, making it highly efficient for galleries and other scenarios with many images
 - **Shared Window Resize Listener**: Multiple `lazy-img` elements using media query mode (`query="media"`) share a single window resize event listener, ensuring optimal performance even with hundreds of instances on a page
+- **Shared IntersectionObserver**: Multiple `lazy-img` elements using view mode with the same `view-range-start` configuration share a single `IntersectionObserver`, making scroll-based lazy loading extremely efficient even with hundreds of images
 - **Efficient Loading**: Images only render in the DOM after loading conditions are met
 - **Clean Disconnection**: Properly cleans up observers and event listeners when elements are removed; automatically removes unused shared observers and listeners when no longer needed
 
