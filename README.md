@@ -4,7 +4,7 @@ A lightweight, flexible web component for lazy-loading images based on viewport 
 
 Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-lazy-images.js) by Aaron Gustafson, now reimagined as a modern Custom Element.
 
-## 🎯 Why Use This?
+## Why Use This?
 
 **Performance Benefit:** Unlike `<picture>` or `srcset` which always load *some* image variant, `<lazy-img>` can **completely skip loading images** on screens or containers below your specified threshold. This saves bandwidth and improves performance for users on smaller devices or slower connections.
 
@@ -12,7 +12,7 @@ For example, if you set `min-inline-size="768"`, mobile users will never downloa
 
 **Note on Resize Behavior:** Once an image is loaded, it remains loaded even if the viewport or container is resized below the threshold. This is intentional for performance — the component prevents unnecessary downloads, but doesn't unload images that are already in memory. Use the `loaded` and `qualifies` attributes to control visibility with CSS if needed.
 
-## ✨ Features
+## Features
 
 - **Container Queries**: Load images based on container width (default)
 - **Media Queries**: Load images based on viewport width
@@ -23,7 +23,7 @@ For example, if you set `min-inline-size="768"`, mobile users will never downloa
 - **Zero Dependencies**: No external libraries required
 - **Shadow DOM**: Fully encapsulated with CSS custom properties
 
-## 📦 Installation
+## Installation
 
 ### npm
 
@@ -50,7 +50,7 @@ import { LazyImgElement } from '@aarongustafson/lazy-img';
 // Element is registered AND class is available
 ```
 
-## 🚀 Usage
+## Usage
 
 ### Basic Example
 
@@ -141,7 +141,7 @@ You can use named breakpoints by defining the `--lazy-img-mq` CSS custom propert
 
 The image will load when the `--lazy-img-mq` custom property matches any of the specified breakpoint names.
 
-## 📖 API
+## API
 
 ### Attributes
 
@@ -203,7 +203,7 @@ lazy-img {
 }
 ```
 
-## 🎯 Examples
+## Examples
 
 ### Controlling Visibility with State Attributes
 
@@ -280,7 +280,7 @@ lazy-img:not([qualifies]) {
 </lazy-img>
 ```
 
-## 🔧 Configuration Patterns
+## Configuration Patterns
 
 ### Immediate Loading (No Conditions)
 
@@ -311,7 +311,7 @@ If you don't specify `min-inline-size` or `named-breakpoints`, the image loads i
 </lazy-img>
 ```
 
-## 🌐 Browser Support
+## Browser Support
 
 Works in all modern browsers supporting:
 - Custom Elements v1
@@ -321,7 +321,7 @@ Works in all modern browsers supporting:
 
 For legacy browser support, consider polyfills for Custom Elements and ResizeObserver.
 
-## 🔄 Migration from Easy Lazy Images
+## Migration from Easy Lazy Images
 
 If you're migrating from the original Easy Lazy Images script:
 
@@ -354,25 +354,25 @@ Key differences:
 - Default query type is `container` (not `media`)
 - No longer requires `watchResize()` - uses ResizeObserver internally
 
-## ⚙️ Performance
+## Performance
 
 - **Throttled Resize**: Resize events are throttled to 150ms to prevent excessive checks
 - **Single Observer**: Uses one ResizeObserver instance per element
 - **Efficient Loading**: Images only render in the DOM after loading conditions are met
 - **Clean Disconnection**: Properly cleans up observers when element is removed
 
-## 📄 License
+## License
 
 MIT - See [LICENSE](LICENSE)
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md)
 
-## 👤 Author
+## Author
 
 Aaron Gustafson <aaron@easy-designs.net> (https://www.aaron-gustafson.com/)
 
-## 🙏 Credits
+## Credits
 
 Based on my original [Easy Lazy Images](https://github.com/easy-designs/easy-lazy-images.js) concept, reimagined as a modern Custom Element.
