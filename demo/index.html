@@ -7,18 +7,70 @@
 		<link rel="stylesheet" href="./styles.css" />
 		<style>
 			/* Demo-specific styles */
+			.demo-container {
+				container-type: inline-size;
+				border: 2px dashed #ccc;
+				padding: 1rem;
+				margin: 1rem 0;
+			}
+			.demo-container.small {
+				max-width: 400px;
+			}
+			.demo-container.medium {
+				max-width: 768px;
+			}
+			.demo-container.large {
+				max-width: 1200px;
+			}
+			.container-info {
+				background: #f0f0f0;
+				padding: 0.5rem;
+				margin-bottom: 1rem;
+				font-family: monospace;
+				font-size: 0.9em;
+			}
+
+			/* Named breakpoint CSS custom property */
+			:root {
+				--lazy-img-mq: small;
+			}
+			@media (min-width: 768px) {
+				:root {
+					--lazy-img-mq: medium;
+				}
+			}
+			@media (min-width: 1024px) {
+				:root {
+					--lazy-img-mq: large;
+				}
+			}
 		</style>
 	</head>
 	<body>
 		<header>
 			<h1>&lt;lazy-img&gt;</h1>
 			<p>
-				Custom element to lazy load an image based on screen size See the
+				Custom element to lazy load an image based on screen size or
+				container size. See the
 				<a
 					href="https://github.com/aarongustafson/lazy-img/blob/main/README.md"
 					>README</a
 				>
 				for installation and API documentation.
+			</p>
+			<p
+				style="
+					background: #fffbea;
+					padding: 1rem;
+					border-left: 4px solid #f59e0b;
+				"
+			>
+				<strong>Performance Benefit:</strong> Unlike
+				<code>&lt;picture&gt;</code> or <code>srcset</code> which always
+				load <em>some</em> image, <code>&lt;lazy-img&gt;</code> can
+				completely skip loading images on screens below your threshold.
+				This saves bandwidth and improves performance for users on
+				smaller devices or slower connections.
 			</p>
 		</header>
 
@@ -26,40 +78,384 @@
 			<!-- Basic Example -->
 			<section>
 				<h2>Basic Example</h2>
-				<p>A simple demonstration of the component.</p>
+				<p>Simple image that loads immediately (no conditions).</p>
 
 				<div class="demo-section">
 					<h3>Basic Usage</h3>
-					<p>Description of this example.</p>
 					<div class="code-demo-pair">
-						<pre><code>&lt;lazy-img&gt;
-  &lt;p&gt;Content goes here&lt;/p&gt;
+						<pre><code>&lt;lazy-img
+  src="https://picsum.photos/800/400"
+  alt="Placeholder image"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
-							<lazy-img>
-								<p>Content goes here</p>
+							<lazy-img
+								src="https://picsum.photos/800/400"
+								alt="Placeholder image"
+							>
 							</lazy-img>
 						</div>
 					</div>
 				</div>
 			</section>
 
-			<!-- Example with Attributes -->
+			<!-- Container Query Example -->
 			<section>
-				<h2>Example with Attributes</h2>
-				<p>Demonstrating component attributes.</p>
+				<h2>Container Query Example (Default)</h2>
+				<p>
+					<strong>💡 Key Feature:</strong> Images only load when the
+					container reaches the minimum size. If the container never
+					gets that big, the image <em>never loads</em> — saving
+					bandwidth! The default query type is "container".
+				</p>
+				<p
+					style="
+						background: #e0f2fe;
+						padding: 0.75rem;
+						border-radius: 4px;
+					"
+				>
+					<strong>Try it:</strong> Each container below starts smaller
+					than needed. Drag the resize handle (bottom-right corner) to
+					widen the container and watch the image lazy load when it
+					hits the threshold.
+				</p>
 
 				<div class="demo-section">
-					<h3>Using Attributes</h3>
-					<p>Description of this example with attributes.</p>
+					<h3>Small Container (min-inline-size: 300px)</h3>
+					<p>
+						👉 <strong>Widen this container to 300px</strong> to see
+						the image load. It starts at 200px (too small), so the
+						image won't load until you resize it.
+					</p>
 					<div class="code-demo-pair">
-						<pre><code>&lt;lazy-img example-attribute="value"&gt;
-  &lt;p&gt;Content with attributes&lt;/p&gt;
+						<pre><code>&lt;lazy-img
+  src="https://picsum.photos/600/300?random=1"
+  alt="Landscape photo"
+  min-inline-size="300"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
-							<lazy-img example-attribute="value">
-								<p>Content with attributes</p>
+							<div
+								id="container-1"
+								class="demo-container small"
+								style="
+									resize: horizontal;
+									overflow: auto;
+									width: 200px;
+								"
+							>
+								<div class="container-info">
+									📏 Current width:
+									<strong
+										><span
+											class="width-tracker"
+											data-container="container-1"
+											>200</span
+										>px</strong
+									>
+									/ Min: 300px
+								</div>
+								<lazy-img
+									src="https://picsum.photos/600/300?random=1"
+									alt="Landscape photo"
+									min-inline-size="300"
+								>
+								</lazy-img>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="demo-section">
+					<h3>Medium Container (min-inline-size: 500px)</h3>
+					<p>
+						👉 <strong>Widen this container to 500px</strong> to
+						trigger the image load.
+					</p>
+					<div class="code-demo-pair">
+						<pre><code>&lt;lazy-img
+  src="https://picsum.photos/800/400?random=2"
+  alt="Nature photo"
+  min-inline-size="500"&gt;
+&lt;/lazy-img&gt;</code></pre>
+						<div class="demo">
+							<div
+								id="container-2"
+								class="demo-container medium"
+								style="
+									resize: horizontal;
+									overflow: auto;
+									width: 350px;
+								"
+							>
+								<div class="container-info">
+									📏 Current width:
+									<strong
+										><span
+											class="width-tracker"
+											data-container="container-2"
+											>350</span
+										>px</strong
+									>
+									/ Min: 500px
+								</div>
+								<lazy-img
+									src="https://picsum.photos/800/400?random=2"
+									alt="Nature photo"
+									min-inline-size="500"
+								>
+								</lazy-img>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Media Query Example -->
+			<section>
+				<h2>Media Query Example</h2>
+				<p>
+					Image loads based on viewport width. Uses
+					<code>query="media"</code> to check window width instead of
+					container width. This is perfect for saving bandwidth on
+					mobile devices — if the viewport is below 768px, this image
+					<em>never loads</em>.
+				</p>
+				<p
+					style="
+						background: #e0f2fe;
+						padding: 0.75rem;
+						border-radius: 4px;
+					"
+				>
+					<strong>Try it:</strong> Resize your browser window to see
+					the effect. The image loads when the viewport reaches 768px
+					wide.
+				</p>
+
+				<div class="demo-section">
+					<h3>Viewport Width Check (min-inline-size: 768px)</h3>
+					<div class="code-demo-pair">
+						<pre><code>&lt;lazy-img
+  src="https://picsum.photos/1000/500?random=3"
+  alt="Wide landscape photo"
+  min-inline-size="768"
+  query="media"&gt;
+&lt;/lazy-img&gt;</code></pre>
+						<div class="demo">
+							<lazy-img
+								src="https://picsum.photos/1000/500?random=3"
+								alt="Wide landscape photo"
+								min-inline-size="768"
+								query="media"
+							>
 							</lazy-img>
+							<p>
+								<small
+									>Current viewport width:
+									<span id="viewport-width"></span>px</small
+								>
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Responsive Images -->
+			<section>
+				<h2>Responsive Images with srcset and sizes</h2>
+				<p>
+					Combine lazy loading with responsive images using srcset and
+					sizes attributes.
+				</p>
+
+				<div class="demo-section">
+					<h3>srcset with sizes</h3>
+					<p>
+						👉 <strong>Widen this container to 400px</strong> to
+						load the responsive image. Once loaded, the browser
+						chooses the appropriate size from srcset.
+					</p>
+					<div class="code-demo-pair">
+						<pre><code>&lt;lazy-img
+  src="https://picsum.photos/800/400?random=4"
+  srcset="https://picsum.photos/400/200?random=4 400w,
+          https://picsum.photos/800/400?random=4 800w,
+          https://picsum.photos/1200/600?random=4 1200w"
+  sizes="(max-width: 600px) 400px,
+         (max-width: 1000px) 800px,
+         1200px"
+  alt="Responsive photo"
+  min-inline-size="400"&gt;
+&lt;/lazy-img&gt;</code></pre>
+						<div class="demo">
+							<div
+								id="container-3"
+								class="demo-container large"
+								style="
+									resize: horizontal;
+									overflow: auto;
+									width: 300px;
+								"
+							>
+								<div class="container-info">
+									📏 Current width:
+									<strong
+										><span
+											class="width-tracker"
+											data-container="container-3"
+											>300</span
+										>px</strong
+									>
+									/ Min: 400px
+								</div>
+								<lazy-img
+									src="https://picsum.photos/800/400?random=4"
+									srcset="https://picsum.photos/400/200?random=4 400w,
+									        https://picsum.photos/800/400?random=4 800w,
+									        https://picsum.photos/1200/600?random=4 1200w"
+									sizes="(max-width: 600px) 400px, (max-width: 1000px) 800px, 1200px"
+									alt="Responsive photo"
+									min-inline-size="400"
+								>
+								</lazy-img>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Named Breakpoints Example -->
+			<section>
+				<h2>Named Breakpoints (CSS Custom Property)</h2>
+				<p>
+					Use the <code>--lazy-img-mq</code> CSS custom property on
+					<code>:root</code> to define named breakpoints. Set
+					different values at different media queries, and images will
+					load when the breakpoint name matches.
+				</p>
+
+				<div class="demo-section">
+					<h3>Example with Named Breakpoints</h3>
+					<p>
+						This demo sets <code>--lazy-img-mq</code> via CSS media
+						queries. Try resizing your browser window to see
+						different breakpoint values.
+					</p>
+					<div class="code-demo-pair">
+						<pre><code>&lt;style&gt;
+  :root {
+    --lazy-img-mq: small;
+  }
+  @media (min-width: 768px) {
+    :root {
+      --lazy-img-mq: medium;
+    }
+  }
+  @media (min-width: 1024px) {
+    :root {
+      --lazy-img-mq: large;
+    }
+  }
+&lt;/style&gt;
+
+&lt;lazy-img
+  src="https://picsum.photos/1000/500?random=5"
+  alt="Scenic photo"
+  named-breakpoints="medium, large"
+  query="media"&gt;
+&lt;/lazy-img&gt;</code></pre>
+						<div class="demo">
+							<p>
+								<small
+									>Current breakpoint:
+									<strong
+										><span id="current-mq"
+											>small</span
+										></strong
+									></small
+								>
+							</p>
+							<p>
+								<em
+									>Image loads when breakpoint is "medium" or
+									"large" (viewport ≥ 768px)</em
+								>
+							</p>
+							<lazy-img
+								src="https://picsum.photos/1000/500?random=5"
+								alt="Scenic photo"
+								named-breakpoints="medium, large"
+								query="media"
+							>
+							</lazy-img>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Events -->
+			<section>
+				<h2>Events</h2>
+				<p>
+					The component dispatches a
+					<code>lazy-img:loaded</code> event when the image loads.
+				</p>
+
+				<div class="demo-section">
+					<h3>Event Example</h3>
+					<p>
+						👉 <strong>Widen this container to 350px</strong> to
+						trigger the load event.
+					</p>
+					<div class="code-demo-pair">
+						<pre><code>&lt;lazy-img
+  id="event-demo"
+  src="https://picsum.photos/600/300?random=6"
+  alt="Event demo photo"
+  min-inline-size="350"&gt;
+&lt;/lazy-img&gt;
+
+&lt;script&gt;
+document.getElementById('event-demo')
+  .addEventListener('lazy-img:loaded', (e) => {
+    console.log('Image loaded:', e.detail.src);
+  });
+&lt;/script&gt;</code></pre>
+						<div class="demo">
+							<div
+								id="container-4"
+								class="demo-container small"
+								style="
+									resize: horizontal;
+									overflow: auto;
+									width: 250px;
+								"
+							>
+								<div class="container-info">
+									📏 Current width:
+									<strong
+										><span
+											class="width-tracker"
+											data-container="container-4"
+											>250</span
+										>px</strong
+									>
+									/ Min: 350px
+								</div>
+								<lazy-img
+									id="event-demo"
+									src="https://picsum.photos/600/300?random=6"
+									alt="Event demo photo"
+									min-inline-size="350"
+								>
+								</lazy-img>
+								<p id="event-status">
+									<small
+										>Event status: waiting for
+										load...</small
+									>
+								</p>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -84,10 +480,71 @@
 			<p>
 				This web component uses modern browser APIs and works in all
 				evergreen browsers. It requires JavaScript to be enabled and
-				uses the Custom Elements API.
+				uses the Custom Elements API and ResizeObserver (for container
+				queries).
 			</p>
 		</footer>
 
 		<script src="../define.js" type="module"></script>
+		<script>
+			// Update viewport width display
+			function updateViewportWidth() {
+				const el = document.getElementById('viewport-width');
+				if (el) {
+					el.textContent = window.innerWidth;
+				}
+			}
+			updateViewportWidth();
+			window.addEventListener('resize', updateViewportWidth);
+
+			// Update current MQ display
+			function updateCurrentMQ() {
+				const mqEl = document.getElementById('current-mq');
+				if (mqEl) {
+					const currentMQ = getComputedStyle(document.documentElement)
+						.getPropertyValue('--lazy-img-mq')
+						.trim();
+					mqEl.textContent = currentMQ || 'not set';
+				}
+			}
+			updateCurrentMQ();
+			window.addEventListener('resize', updateCurrentMQ);
+
+			// Container width tracking
+			const widthTrackers = document.querySelectorAll('.width-tracker');
+			const resizeObservers = new Map();
+
+			widthTrackers.forEach((tracker) => {
+				const containerId = tracker.getAttribute('data-container');
+				const container = document.getElementById(containerId);
+
+				if (container) {
+					const observer = new ResizeObserver((entries) => {
+						for (const entry of entries) {
+							const width = Math.round(
+								entry.contentBoxSize?.[0]?.inlineSize ||
+									entry.contentRect.width,
+							);
+							tracker.textContent = width;
+						}
+					});
+
+					observer.observe(container);
+					resizeObservers.set(containerId, observer);
+				}
+			});
+
+			// Event demo
+			const eventDemo = document.getElementById('event-demo');
+			if (eventDemo) {
+				eventDemo.addEventListener('lazy-img:loaded', (e) => {
+					const status = document.getElementById('event-status');
+					if (status) {
+						status.innerHTML = `<small>✅ Event fired! Image loaded: ${e.detail.src}</small>`;
+					}
+					console.log('Image loaded:', e.detail.src);
+				});
+			}
+		</script>
 	</body>
 </html>
