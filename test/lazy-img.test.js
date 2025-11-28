@@ -83,6 +83,40 @@ describe('LazyImgElement', () => {
 			const img = element.shadowRoot.querySelector('img');
 			expect(img.getAttribute('alt')).toBe('');
 		});
+
+		it('should pass through all img attributes comprehensively', () => {
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('alt', 'Test image');
+			element.setAttribute(
+				'srcset',
+				'test-400.jpg 400w, test-800.jpg 800w',
+			);
+			element.setAttribute('sizes', '(max-width: 600px) 400px, 800px');
+			element.setAttribute('width', '800');
+			element.setAttribute('height', '600');
+			element.setAttribute('loading', 'lazy');
+			element.setAttribute('decoding', 'async');
+			element.setAttribute('fetchpriority', 'high');
+			element.setAttribute('crossorigin', 'anonymous');
+			element.setAttribute('referrerpolicy', 'no-referrer');
+
+			const img = element.shadowRoot.querySelector('img');
+			expect(img.getAttribute('src')).toBe('test.jpg');
+			expect(img.getAttribute('alt')).toBe('Test image');
+			expect(img.getAttribute('srcset')).toBe(
+				'test-400.jpg 400w, test-800.jpg 800w',
+			);
+			expect(img.getAttribute('sizes')).toBe(
+				'(max-width: 600px) 400px, 800px',
+			);
+			expect(img.getAttribute('width')).toBe('800');
+			expect(img.getAttribute('height')).toBe('600');
+			expect(img.getAttribute('loading')).toBe('lazy');
+			expect(img.getAttribute('decoding')).toBe('async');
+			expect(img.getAttribute('fetchpriority')).toBe('high');
+			expect(img.getAttribute('crossorigin')).toBe('anonymous');
+			expect(img.getAttribute('referrerpolicy')).toBe('no-referrer');
+		});
 	});
 
 	describe('Immediate loading (no conditions)', () => {
