@@ -4,6 +4,8 @@ A lightweight, flexible web component for lazy-loading images based on viewport 
 
 Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-lazy-images.js) by Aaron Gustafson, now reimagined as a modern Custom Element.
 
+**[View Demo](https://aarongustafson.github.io/lazy-img/demo/)**
+
 ## Why Use This?
 
 **Performance Benefit:** Unlike `<picture>` or `srcset` which always load *some* image variant, `<lazy-img>` can **completely skip loading images** on screens or containers below your specified threshold. This saves bandwidth and improves performance for users on smaller devices or slower connections.
