@@ -25,6 +25,11 @@
  * @cssprop --lazy-img-display - Display mode (default: block)
  * @cssprop --lazy-img-mq - Named media query identifier (set at :root level via media queries)
  */
+
+// Shared ResizeObserver registry to improve performance when multiple
+// lazy-img elements observe the same parent container
+const sharedObservers = new WeakMap();
+
 export class LazyImgElement extends HTMLElement {
 	// Attributes that get passed through to the inner <img> element
 	static IMG_ATTRIBUTES = [
@@ -68,6 +73,41 @@ export class LazyImgElement extends HTMLElement {
 		const div = document.createElement('div');
 		div.textContent = text;
 		return div.innerHTML;
+	}
+
+	/**
+	 * Gets or creates a shared ResizeObserver for a target element
+	 * @param {Element} target - The element to observe
+	 * @returns {Object} Object with observer and callbacks Set
+	 */
+	static _getSharedObserver(target) {
+		if (!sharedObservers.has(target)) {
+			const callbacks = new Set();
+			const observer = new ResizeObserver((entries) => {
+				// Call all registered callbacks for this observer
+				callbacks.forEach((callback) => callback(entries));
+			});
+			observer.observe(target);
+			sharedObservers.set(target, { observer, callbacks });
+		}
+		return sharedObservers.get(target);
+	}
+
+	/**
+	 * Unregisters a callback from a shared ResizeObserver
+	 * @param {Element} target - The observed element
+	 * @param {Function} callback - The callback to remove
+	 */
+	static _removeSharedObserver(target, callback) {
+		const shared = sharedObservers.get(target);
+		if (shared) {
+			shared.callbacks.delete(callback);
+			// Clean up if no more callbacks
+			if (shared.callbacks.size === 0) {
+				shared.observer.disconnect();
+				sharedObservers.delete(target);
+			}
+		}
 	}
 
 	/**
@@ -163,9 +203,13 @@ export class LazyImgElement extends HTMLElement {
 		const queryType = this.getAttribute('query') || 'container';
 
 		if (queryType === 'container') {
-			// Use ResizeObserver for container queries
-			// Observe the parent element, not this element, to avoid issues with display:none
-			this._resizeObserver = new ResizeObserver((entries) => {
+			// Use shared ResizeObserver for container queries to improve performance
+			// when multiple lazy-img elements share the same parent
+			const targetElement = this.parentElement || this;
+			this._observedTarget = targetElement;
+
+			// Create callback for this instance
+			this._resizeCallback = (entries) => {
 				this._throttledResize(() => {
 					for (const entry of entries) {
 						this._currentSize =
@@ -174,10 +218,11 @@ export class LazyImgElement extends HTMLElement {
 						this._checkAndLoad();
 					}
 				});
-			});
-			// Observe parent element to ensure we get resize events even with display:none
-			const targetElement = this.parentElement || this;
-			this._resizeObserver.observe(targetElement);
+			};
+
+			// Register with shared observer
+			const shared = LazyImgElement._getSharedObserver(targetElement);
+			shared.callbacks.add(this._resizeCallback);
 		} else {
 			// Use window resize for media queries
 			this._handleResize = () => {
@@ -195,14 +240,21 @@ export class LazyImgElement extends HTMLElement {
 	}
 
 	_cleanupResizeWatcher() {
-		if (this._resizeObserver) {
-			this._resizeObserver.disconnect();
-			this._resizeObserver = null;
+		// Cleanup shared ResizeObserver callback
+		if (this._observedTarget && this._resizeCallback) {
+			LazyImgElement._removeSharedObserver(
+				this._observedTarget,
+				this._resizeCallback,
+			);
+			this._observedTarget = null;
+			this._resizeCallback = null;
 		}
+		// Cleanup window resize listener
 		if (this._handleResize) {
 			window.removeEventListener('resize', this._handleResize);
 			this._handleResize = null;
 		}
+		// Cleanup throttle timeout
 		if (this._throttleTimeout) {
 			clearTimeout(this._throttleTimeout);
 			this._throttleTimeout = null;

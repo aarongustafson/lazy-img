@@ -136,10 +136,10 @@ describe('LazyImgElement', () => {
 
 			// Query attribute should default to "container"
 			expect(element.getAttribute('query')).toBeNull(); // Not set explicitly
-			// Component should set up ResizeObserver
-			expect(element._resizeObserver).toBeTruthy();
+			// Component should set up shared ResizeObserver
+			expect(element._resizeCallback).toBeTruthy();
+			expect(element._observedTarget).toBeTruthy();
 		});
-
 		it('should not load image until container reaches min-inline-size', () => {
 			element.setAttribute('src', 'test.jpg');
 			element.setAttribute('min-inline-size', '500');
@@ -266,14 +266,83 @@ describe('LazyImgElement', () => {
 			element.setAttribute('src', 'test.jpg');
 			element.setAttribute('min-inline-size', '500');
 
-			const observer = element._resizeObserver;
-			expect(observer).toBeTruthy();
+			const callback = element._resizeCallback;
+			const target = element._observedTarget;
+			expect(callback).toBeTruthy();
+			expect(target).toBeTruthy();
 
-			const disconnectSpy = vi.spyOn(observer, 'disconnect');
 			element.disconnectedCallback();
 
-			expect(disconnectSpy).toHaveBeenCalled();
-			expect(element._resizeObserver).toBeNull();
+			expect(element._resizeCallback).toBeNull();
+			expect(element._observedTarget).toBeNull();
+		});
+
+		it('should share ResizeObserver between multiple instances with same parent', () => {
+			// Create a parent container
+			const parent = document.createElement('div');
+			document.body.appendChild(parent);
+
+			// Create two lazy-img elements with the same parent
+			const element1 = document.createElement('lazy-img');
+			const element2 = document.createElement('lazy-img');
+
+			parent.appendChild(element1);
+			parent.appendChild(element2);
+
+			element1.setAttribute('src', 'test1.jpg');
+			element1.setAttribute('min-inline-size', '400');
+
+			element2.setAttribute('src', 'test2.jpg');
+			element2.setAttribute('min-inline-size', '500');
+
+			// Both elements should observe the same target (parent)
+			expect(element1._observedTarget).toBe(parent);
+			expect(element2._observedTarget).toBe(parent);
+
+			// Both should have their own callbacks registered
+			expect(element1._resizeCallback).toBeTruthy();
+			expect(element2._resizeCallback).toBeTruthy();
+			expect(element1._resizeCallback).not.toBe(element2._resizeCallback);
+
+			// Clean up
+			element1.disconnectedCallback();
+			element2.disconnectedCallback();
+			document.body.removeChild(parent);
+		});
+
+		it('should automatically clean up shared observer when all instances disconnect', async () => {
+			// Create a parent container
+			const parent = document.createElement('div');
+			document.body.appendChild(parent);
+
+			// Create two lazy-img elements with the same parent
+			const element1 = document.createElement('lazy-img');
+			const element2 = document.createElement('lazy-img');
+			
+			parent.appendChild(element1);
+			parent.appendChild(element2);
+
+			element1.setAttribute('src', 'test1.jpg');
+			element1.setAttribute('min-inline-size', '400');
+			
+			element2.setAttribute('src', 'test2.jpg');
+			element2.setAttribute('min-inline-size', '500');
+			
+			// Verify both are registered
+			expect(element1._observedTarget).toBe(parent);
+			expect(element2._observedTarget).toBe(parent);
+
+			// Disconnect first element - shared observer should still exist
+			element1.disconnectedCallback();
+			expect(element1._observedTarget).toBeNull();
+			expect(element2._observedTarget).toBe(parent); // Second still connected
+
+			// Disconnect second element - shared observer should be cleaned up automatically
+			element2.disconnectedCallback();
+			expect(element2._observedTarget).toBeNull();
+
+			// Clean up DOM
+			document.body.removeChild(parent);
 		});
 
 		it('should clear throttle timeout on disconnect', () => {
