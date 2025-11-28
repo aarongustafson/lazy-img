@@ -293,12 +293,35 @@ export class LazyImgElement extends HTMLElement {
 		this._throttleDelay = 150; // milliseconds
 		this._namedBreakpoints = null;
 		this._minInlineSize = null;
+		this._queryType = 'container'; // Cache query type
+		this._parsedBreakpoints = null; // Cache parsed breakpoint array
+		
+		// Inject static CSS once in constructor instead of on every render
+		const style = document.createElement('style');
+		style.textContent = `
+			:host {
+				display: var(--lazy-img-display, block);
+			}
+			img {
+				max-width: 100%;
+				height: auto;
+			}
+		`;
+		this.shadowRoot.appendChild(style);
 	}
 
 	connectedCallback() {
 		// Initialize cached attribute values
 		this._namedBreakpoints = this.getAttribute('named-breakpoints');
 		this._minInlineSize = this.getAttribute('min-inline-size');
+		this._queryType = this.getAttribute('query') || 'container';
+		
+		// Parse and cache breakpoints array to avoid repeated splitting
+		if (this._namedBreakpoints) {
+			this._parsedBreakpoints = this._namedBreakpoints
+				.split(',')
+				.map((bp) => bp.trim());
+		}
 
 		this.render();
 		this._setupResizeWatcher();
@@ -313,8 +336,14 @@ export class LazyImgElement extends HTMLElement {
 			// Update cached attribute values
 			if (name === 'named-breakpoints') {
 				this._namedBreakpoints = newValue;
+				// Update parsed breakpoints cache
+				this._parsedBreakpoints = newValue
+					? newValue.split(',').map((bp) => bp.trim())
+					: null;
 			} else if (name === 'min-inline-size') {
 				this._minInlineSize = newValue;
+			} else if (name === 'query') {
+				this._queryType = newValue || 'container';
 			}
 
 			// If already loaded and it's a source attribute change, don't allow it
@@ -345,7 +374,7 @@ export class LazyImgElement extends HTMLElement {
 	}
 
 	_setupResizeWatcher() {
-		const queryType = this.getAttribute('query') || 'container';
+		const queryType = this._queryType;
 
 		if (queryType === 'view') {
 			// Use shared IntersectionObserver for view-based loading
@@ -459,18 +488,15 @@ export class LazyImgElement extends HTMLElement {
 
 	_updateQualifies() {
 		// Skip qualifies in view mode - it's a one-time intersection trigger
-		const queryType = this.getAttribute('query') || 'container';
-		if (queryType === 'view') {
+		if (this._queryType === 'view') {
 			return true; // Always return true for view mode, but don't set attribute
 		}
 
 		let qualifies = false;
 
 		// Support named breakpoints via --lazy-img-mq CSS custom property
-		if (this._namedBreakpoints) {
-			const breakpoints = this._namedBreakpoints
-				.split(',')
-				.map((bp) => bp.trim());
+		if (this._parsedBreakpoints) {
+			const breakpoints = this._parsedBreakpoints;
 
 			// Read the current value of --lazy-img-mq from :root
 			const activeMQ = LazyImgElement.getActiveMQ();
@@ -549,37 +575,48 @@ export class LazyImgElement extends HTMLElement {
 
 		// Bail early if no src - img would be invalid
 		if (!src) {
-			this.shadowRoot.innerHTML = '';
+			// Only clear if there's content to clear
+			const img = this.shadowRoot.querySelector('img');
+			if (img) {
+				img.remove();
+			}
 			return;
 		}
 
-		let imageHTML = '';
-		const queryType = this.getAttribute('query') || 'container';
-
 		// Only render image if loaded or if no loading conditions are set
 		// For view mode, only render when loaded (IntersectionObserver controls loading)
-		if (
+		const shouldRenderImage =
 			this._loaded ||
-			(queryType !== 'view' &&
-				!this.getAttribute('min-inline-size') &&
-				!this.getAttribute('named-breakpoints'))
-		) {
-			const imgAttrs = this._getImgAttributes();
-			const attrString = LazyImgElement._buildAttributeString(imgAttrs);
-			imageHTML = `<img ${attrString} />`;
-		}
+			(this._queryType !== 'view' &&
+				!this._minInlineSize &&
+				!this._namedBreakpoints);
 
-		this.shadowRoot.innerHTML = `
-			<style>
-				:host {
-					display: var(--lazy-img-display, block);
+		if (shouldRenderImage) {
+			// Check if image already exists to avoid unnecessary DOM updates
+			const existingImg = this.shadowRoot.querySelector('img');
+			const imgAttrs = this._getImgAttributes();
+			
+			if (existingImg) {
+				// Update existing img attributes instead of recreating
+				for (const [key, value] of Object.entries(imgAttrs)) {
+					if (existingImg.getAttribute(key) !== value) {
+						existingImg.setAttribute(key, value);
+					}
 				}
-				img {
-					max-width: 100%;
-					height: auto;
+			} else {
+				// Create new img element
+				const img = document.createElement('img');
+				for (const [key, value] of Object.entries(imgAttrs)) {
+					img.setAttribute(key, value);
 				}
-			</style>
-			${imageHTML}
-		`;
+				this.shadowRoot.appendChild(img);
+			}
+		} else {
+			// Remove image if conditions not met
+			const existingImg = this.shadowRoot.querySelector('img');
+			if (existingImg) {
+				existingImg.remove();
+			}
+		}
 	}
 }
