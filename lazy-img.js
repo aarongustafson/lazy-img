@@ -96,6 +96,7 @@ export class LazyImgElement extends HTMLElement {
 
 		if (queryType === 'container') {
 			// Use ResizeObserver for container queries
+			// Observe the parent element, not this element, to avoid issues with display:none
 			this._resizeObserver = new ResizeObserver((entries) => {
 				this._throttledResize(() => {
 					for (const entry of entries) {
@@ -106,7 +107,9 @@ export class LazyImgElement extends HTMLElement {
 					}
 				});
 			});
-			this._resizeObserver.observe(this);
+			// Observe parent element to ensure we get resize events even with display:none
+			const targetElement = this.parentElement || this;
+			this._resizeObserver.observe(targetElement);
 		} else {
 			// Use window resize for media queries
 			this._handleResize = () => {
@@ -195,7 +198,7 @@ export class LazyImgElement extends HTMLElement {
 	}
 
 	_shouldLoad() {
-		// Update qualifies attribute based on current conditions
+		// Check if conditions are met (qualifies will be updated by caller)
 		const qualifies = this._updateQualifies();
 
 		// Only load if qualifies and not already loaded
@@ -203,11 +206,8 @@ export class LazyImgElement extends HTMLElement {
 	}
 
 	_checkAndLoad() {
-		// Always update qualifies attribute
-		this._updateQualifies();
-
-		// Only attempt to load if not already loaded
-		if (this._shouldLoad() && !this._loaded) {
+		// Check if should load (this also updates qualifies)
+		if (this._shouldLoad()) {
 			this._loadImage();
 		}
 	}
