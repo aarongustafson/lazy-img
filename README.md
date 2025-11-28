@@ -1,4 +1,4 @@
-# &lt;lazy-img&gt;
+# Lazy Img Web Component
 
 A lightweight, flexible web component for lazy-loading images based on viewport or container size. Perfect for responsive images that should only load when needed.
 
@@ -8,7 +8,7 @@ Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-la
 
 ## Why Use This?
 
-**Performance Benefit:** Unlike `<picture>` or `srcset` which always load *some* image variant, `<lazy-img>` can **completely skip loading images** on screens or containers below your specified threshold. This saves bandwidth and improves performance for users on smaller devices or slower connections.
+**Performance Benefit:** Unlike `picture` or `srcset` which always load *some* image variant, `lazy-img` can **completely skip loading images** on screens or containers below your specified threshold. This saves bandwidth and improves performance for users on smaller devices or slower connections.
 
 For example, if you set `min-inline-size="768"`, mobile users will never download that image at all — saving their data and speeding up your page load.
 
@@ -79,7 +79,7 @@ Load an image when its container reaches a minimum width:
 </lazy-img>
 ```
 
-The image will load when the `<lazy-img>` element's container reaches 500px width.
+The image will load when the `lazy-img` element's container reaches 500px width.
 
 ### Media Query
 
@@ -157,7 +157,7 @@ The image will load when the `--lazy-img-mq` custom property matches any of the 
 
 ### Attributes
 
-#### Image Attributes (passed to `<img>`)
+#### Image Attributes (passed to `img`)
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -368,6 +368,10 @@ If you don't specify `min-inline-size` or `named-breakpoints`, the image loads i
 ```html
 <lazy-img src="image.jpg" alt="Loads immediately"></lazy-img>
 ```
+
+**Note:** While this pattern loads the image immediately (like a standard `img`), it still provides a performance benefit: **if JavaScript fails to load or execute, the image won't load at all**. This can be desirable for non-critical images that enhance but aren't essential to the content (e.g., decorative images, supplementary graphics, or marketing banners).
+
+**Important:** Only use this pattern for non-critical images that aren't referenced in your content. Critical images that are part of your content should use standard `img` tags to ensure they load even when JavaScript is unavailable.
 
 ### Container-Based Loading (Default)
 
