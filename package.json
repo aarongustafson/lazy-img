@@ -1,6 +1,6 @@
 {
 	"name": "@aarongustafson/lazy-img",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "Custom element to lazy load an image based on screen size",
 	"keywords": [
 		"html",
