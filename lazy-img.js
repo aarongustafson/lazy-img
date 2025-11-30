@@ -1,5 +1,5 @@
 /**
- * LazyImgElement - Custom element to lazy load an image based on screen size
+ * LazyImgElement - Web component that enables you tolazy load an image based on screen size
  *
  * @element lazy-img
  *

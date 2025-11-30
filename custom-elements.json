@@ -8,7 +8,7 @@
 			"declarations": [
 				{
 					"kind": "class",
-					"description": "Custom element to lazy load an image based on screen size",
+					"description": "Web component that enables you tolazy load an image based on screen size",
 					"name": "LazyImgElement",
 					"members": [],
 					"events": [],
