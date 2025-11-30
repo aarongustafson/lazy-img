@@ -8,11 +8,149 @@
 			"declarations": [
 				{
 					"kind": "class",
-					"description": "Web component that enables you tolazy load an image based on screen size",
+					"description": "Web component that enables you to lazy load an image based on screen size",
 					"name": "LazyImgElement",
+					"cssProperties": [
+						{
+							"name": "--lazy-img-display",
+							"description": "Display mode (default: block)"
+						},
+						{
+							"name": "--lazy-img-mq",
+							"description": "Named media query identifier (set at :root level via media queries)"
+						}
+					],
 					"members": [],
-					"events": [],
-					"attributes": [],
+					"events": [
+						{
+							"name": "lazy-img:loaded",
+							"type": {
+								"text": "CustomEvent"
+							},
+							"description": "Dispatched when the image has been loaded"
+						}
+					],
+					"attributes": [
+						{
+							"name": "src",
+							"type": {
+								"text": "string"
+							},
+							"description": "The image source URL"
+						},
+						{
+							"name": "alt",
+							"type": {
+								"text": "string"
+							},
+							"description": "Alternative text for the image"
+						},
+						{
+							"name": "srcset",
+							"type": {
+								"text": "string"
+							},
+							"description": "Responsive image srcset attribute"
+						},
+						{
+							"name": "sizes",
+							"type": {
+								"text": "string"
+							},
+							"description": "Responsive image sizes attribute"
+						},
+						{
+							"name": "width",
+							"type": {
+								"text": "string"
+							},
+							"description": "Intrinsic width of the image (helps prevent layout shift)"
+						},
+						{
+							"name": "height",
+							"type": {
+								"text": "string"
+							},
+							"description": "Intrinsic height of the image (helps prevent layout shift)"
+						},
+						{
+							"name": "loading",
+							"type": {
+								"text": "string"
+							},
+							"description": "Native lazy loading hint (\"lazy\" or \"eager\")"
+						},
+						{
+							"name": "decoding",
+							"type": {
+								"text": "string"
+							},
+							"description": "Image decoding hint (\"async\", \"sync\", or \"auto\")"
+						},
+						{
+							"name": "fetchpriority",
+							"type": {
+								"text": "string"
+							},
+							"description": "Resource fetch priority (\"high\", \"low\", or \"auto\")"
+						},
+						{
+							"name": "crossorigin",
+							"type": {
+								"text": "string"
+							},
+							"description": "CORS settings (\"anonymous\" or \"use-credentials\")"
+						},
+						{
+							"name": "referrerpolicy",
+							"type": {
+								"text": "string"
+							},
+							"description": "Referrer policy for the image request"
+						},
+						{
+							"name": "min-inline-size",
+							"type": {
+								"text": "string"
+							},
+							"description": "Minimum inline size (in pixels) to load the image"
+						},
+						{
+							"name": "named-breakpoints",
+							"type": {
+								"text": "string"
+							},
+							"description": "Comma-separated list of named breakpoints (reads from --lazy-img-mq CSS custom property)"
+						},
+						{
+							"name": "query",
+							"type": {
+								"text": "string"
+							},
+							"description": "Query type: \"container\" (default), \"media\", or \"view\" for IntersectionObserver"
+						},
+						{
+							"name": "view-range-start",
+							"type": {
+								"text": "string"
+							},
+							"description": "When to load in view mode: \"entry X%\" for threshold or \"entry -Xpx\" for preload margin (default: \"entry 0%\")"
+						},
+						{
+							"name": "loaded",
+							"type": {
+								"text": "boolean"
+							},
+							"description": "Reflects whether the image has been loaded (read-only, set by component)"
+						},
+						{
+							"name": "qualifies",
+							"type": {
+								"text": "boolean"
+							},
+							"description": "Reflects whether element currently meets conditions to display (read-only, set by component, not used in view mode)"
+						}
+					],
 					"superclass": {
 						"name": "HTMLElement"
 					},
