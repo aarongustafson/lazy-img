@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>&lt;lazy-img&gt; Web Component Demo</title>
+		<title>lazy-img Web Component Demo</title>
 		<link rel="stylesheet" href="./styles.css" />
 		<style>
 			/* Demo-specific styles */
@@ -23,7 +23,8 @@
 				max-width: 1200px;
 			}
 			.container-info {
-				background: #f0f0f0;
+				background: Canvas;
+				color: CanvasText;
 				padding: 0.5rem;
 				margin-bottom: 1rem;
 				font-family: monospace;
@@ -31,14 +32,15 @@
 			}
 
 			.load-time-display {
-				background: #f0fdf4;
-				padding: 0.5rem;
+				background: Canvas;
+				color: CanvasText;
 				margin-top: 0.5rem;
 				border-left: 3px solid #10b981;
 				font-family: monospace;
 			}
 			.load-time-display.loaded {
-				background: #dbeafe;
+				background: Canvas;
+				color: CanvasText;
 				border-left-color: #3b82f6;
 			}
 
@@ -60,7 +62,7 @@
 	</head>
 	<body>
 		<header>
-			<h1>&lt;lazy-img&gt;</h1>
+			<h1><code>lazy-img</code> Web Component Demo</h1>
 			<p>
 				Custom element to lazy load images based on container size,
 				viewport size, or scroll position. See the
@@ -70,27 +72,15 @@
 				>
 				for installation and API documentation.
 			</p>
-			<p
-				style="
-					background: #fffbea;
-					padding: 1rem;
-					border-left: 4px solid #f59e0b;
-				"
-			>
+			<p style="padding: 1rem; border-left: 4px solid #f59e0b">
 				<strong>Performance Benefit:</strong> Unlike
-				<code>&lt;picture&gt;</code> or <code>srcset</code> which always
-				load <em>some</em> image, <code>&lt;lazy-img&gt;</code> can
-				completely skip loading images on screens below your threshold.
-				This saves bandwidth and improves performance for users on
-				smaller devices or slower connections.
+				<code>picture</code> or <code>srcset</code> which always load
+				<em>some</em> image, <code>lazy-img</code> can completely skip
+				loading images on screens below your threshold. This saves
+				bandwidth and improves performance for users on smaller devices
+				or slower connections.
 			</p>
-			<p
-				style="
-					background: #f0fdf4;
-					padding: 1rem;
-					border-left: 4px solid #10b981;
-				"
-			>
+			<p style="padding: 1rem; border-left: 4px solid #10b981">
 				<strong>Note on Resize Behavior:</strong> Once an image is
 				loaded, it remains loaded even if the viewport or container is
 				resized below the threshold. This is intentional for performance
@@ -108,7 +98,6 @@
 				<p>Simple image that loads immediately (no conditions).</p>
 				<p
 					style="
-						background: #fffbea;
 						padding: 0.75rem;
 						border-radius: 4px;
 						border-left: 4px solid #f59e0b;
@@ -116,7 +105,7 @@
 				>
 					<strong>💡 Performance Note:</strong> While this pattern
 					loads the image immediately (like a standard
-					<code>&lt;img&gt;</code>), it still provides a benefit:
+					<code>img</code>), it still provides a benefit:
 					<strong
 						>if JavaScript fails to load or execute, the image won't
 						load at all</strong
@@ -127,8 +116,8 @@
 					<strong>⚠️ Important:</strong> Only use this pattern for
 					non-critical images that aren't referenced in your content.
 					Critical images that are part of your content should use
-					standard <code>&lt;img&gt;</code> tags to ensure they load
-					even when JavaScript is unavailable.
+					standard <code>img</code> tags to ensure they load even when
+					JavaScript is unavailable.
 				</p>
 
 				<div class="demo-section">
@@ -158,13 +147,7 @@
 					gets that big, the image <em>never loads</em> — saving
 					bandwidth! The default query type is "container".
 				</p>
-				<p
-					style="
-						background: #e0f2fe;
-						padding: 0.75rem;
-						border-radius: 4px;
-					"
-				>
+				<p style="padding: 0.75rem; border-radius: 4px">
 					<strong>Try it:</strong> Each container below starts smaller
 					than needed. Drag the resize handle (bottom-right corner) to
 					widen the container and watch the image lazy load when it
@@ -271,13 +254,7 @@
 					mobile devices — if the viewport is below 768px, this image
 					<em>never loads</em>.
 				</p>
-				<p
-					style="
-						background: #e0f2fe;
-						padding: 0.75rem;
-						border-radius: 4px;
-					"
-				>
+				<p style="padding: 0.75rem; border-radius: 4px">
 					<strong>Try it:</strong> Resize your browser window to see
 					the effect. The image loads when the viewport reaches 768px
 					wide.
@@ -321,13 +298,7 @@
 					you scroll" pattern — images only load when they become
 					visible or are about to become visible.
 				</p>
-				<p
-					style="
-						background: #e0f2fe;
-						padding: 0.75rem;
-						border-radius: 4px;
-					"
-				>
+				<p style="padding: 0.75rem; border-radius: 4px">
 					<strong>Try it:</strong> Scroll down to see images load as
 					they enter the viewport. The timing can be controlled with
 					<code>view-range-start</code>.
@@ -349,7 +320,6 @@
 							<div
 								style="
 									height: 400px;
-									background: #f0f0f0;
 									display: flex;
 									align-items: center;
 									justify-content: center;
@@ -388,7 +358,6 @@
 							<div
 								style="
 									height: 300px;
-									background: #f0f0f0;
 									display: flex;
 									align-items: center;
 									justify-content: center;
@@ -431,7 +400,6 @@
 							<div
 								style="
 									height: 400px;
-									background: #f0f0f0;
 									display: flex;
 									align-items: center;
 									justify-content: center;
@@ -686,7 +654,6 @@ document.getElementById('event-demo')
 							content: '⏳ Waiting to load...';
 							display: block;
 							padding: 2em;
-							background: #f0f0f0;
 							text-align: center;
 							color: #666;
 						}
@@ -694,7 +661,6 @@ document.getElementById('event-demo')
 							font-family: monospace;
 							font-size: 0.85em;
 							padding: 0.5rem;
-							background: #f9fafb;
 							margin-top: 0.5rem;
 							border-left: 3px solid #3b82f6;
 						}
@@ -776,12 +742,11 @@ document.getElementById('event-demo')
 		</main>
 
 		<footer>
-			<h2>Browser Support & Notes</h2>
 			<p>
-				This web component uses modern browser APIs and works in all
-				evergreen browsers. It requires JavaScript to be enabled and
-				uses the Custom Elements API, ResizeObserver (for container
-				queries), and IntersectionObserver (for view mode).
+				Made with ❤️ by
+				<a href="https://github.com/aarongustafson">Aaron Gustafson</a>.
+				View the source on
+				<a href="https://github.com/aarongustafson/lazy-img">GitHub</a>.
 			</p>
 		</footer>
 
