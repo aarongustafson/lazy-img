@@ -1,10 +1,14 @@
 # Lazy Img Web Component
 
+[![npm version](https://img.shields.io/npm/v/@aarongustafson/lazy-img.svg)](https://www.npmjs.com/package/@aarongustafson/lazy-img) [![Build Status](https://img.shields.io/github/actions/workflow/status/aarongustafson/lazy-img/ci.yml?branch=main)](https://github.com/aarongustafson/lazy-img/actions)
+
 A lightweight, flexible web component for lazy-loading images based on viewport or container size. Perfect for responsive images that should only load when needed.
 
 Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-lazy-images.js) by Aaron Gustafson, now reimagined as a modern Custom Element.
 
-**[View Demo](https://aarongustafson.github.io/lazy-img/demo/)**
+## Demo
+
+[Live Demo](https://aarongustafson.github.io/lazy-img/demo/) ([Source](./demo/index.html))
 
 ## Why Use This?
 
