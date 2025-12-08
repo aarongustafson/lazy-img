@@ -40,21 +40,31 @@ npm install @aarongustafson/lazy-img
 
 ### Import
 
-**Option 1: Auto-define (easiest)**
+**Option 1: Manual registration**
 ```javascript
-import '@aarongustafson/lazy-img';
-```
+import { LazyImgElement } from '@aarongustafson/lazy-img';
 
-**Option 2: Manual registration**
-```javascript
-import { LazyImgElement } from '@aarongustafson/lazy-img/lazy-img.js';
 customElements.define('lazy-img', LazyImgElement);
 ```
 
-**Option 3: Both**
+**Option 2: Auto-define (browser environments only)**
 ```javascript
-import { LazyImgElement } from '@aarongustafson/lazy-img';
-// Element is registered AND class is available
+import '@aarongustafson/lazy-img/define.js';
+// Registers <lazy-img> when customElements is available
+```
+
+Prefer to control when registration happens? Call the helper directly:
+
+```javascript
+import { defineLazyImg } from '@aarongustafson/lazy-img/define.js';
+
+defineLazyImg();
+```
+
+You can also include the guarded script from HTML:
+
+```html
+<script src="./node_modules/@aarongustafson/lazy-img/define.js" type="module"></script>
 ```
 
 ## Usage
