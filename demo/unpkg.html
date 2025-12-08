@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>lazy-img via unpkg</title>
+		<style>
+			body {
+				font-family: system-ui, sans-serif;
+				margin: 2rem;
+				line-height: 1.5;
+			}
+
+			lazy-img {
+				display: block;
+				max-width: 600px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>unpkg CDN sanity check</h1>
+		<p>
+			This page loads the guarded definition helper from
+			<code>unpkg</code> and registers the element when supported.
+		</p>
+
+		<lazy-img
+			src="https://picsum.photos/seed/unpkg/800/400"
+			alt="Sample image from Picsum"
+		></lazy-img>
+
+		<script type="module">
+			import { defineLazyImg } from 'https://unpkg.com/@aarongustafson/lazy-img@latest/define.js?module';
+
+			defineLazyImg();
+		</script>
+	</body>
+</html>

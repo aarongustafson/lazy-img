@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>lazy-img via esm.sh</title>
+		<style>
+			body {
+				font-family: system-ui, sans-serif;
+				margin: 2rem;
+				line-height: 1.5;
+			}
+
+			lazy-img {
+				display: block;
+				max-width: 600px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>esm.sh CDN sanity check</h1>
+		<p>
+			This page loads the component class from <code>esm.sh</code> and
+			registers it manually.
+		</p>
+
+		<lazy-img
+			src="https://picsum.photos/seed/esmsh/800/400"
+			alt="Sample image from Picsum"
+		></lazy-img>
+
+		<script type="module">
+			import { LazyImgElement } from 'https://esm.sh/@aarongustafson/lazy-img@1.1.5/lazy-img.js?bundle&target=es2022';
+
+			if (!customElements.get('lazy-img')) {
+				customElements.define('lazy-img', LazyImgElement);
+			}
+		</script>
+	</body>
+</html>
