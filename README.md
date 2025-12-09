@@ -10,6 +10,10 @@ Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-la
 
 [Live Demo](https://aarongustafson.github.io/lazy-img/demo/) ([Source](./demo/index.html))
 
+**CDN Demos:**
+- [unpkg](https://aarongustafson.github.io/lazy-img/demo/unpkg.html) ([Source](./demo/unpkg.html))
+- [esm.sh](https://aarongustafson.github.io/lazy-img/demo/esm.html) ([Source](./demo/esm.html))
+
 ## Why Use This?
 
 **Performance Benefit:** Unlike `picture` or `srcset` which always load *some* image variant, `lazy-img` can **completely skip loading images** on screens or containers below your specified threshold. This saves bandwidth and improves performance for users on smaller devices or slower connections.
@@ -26,10 +30,6 @@ For example, if you set `min-inline-size="768"`, mobile users will never downloa
 - **[Named Breakpoints](#named-breakpoints)**: Support for named breakpoints via CSS custom properties
 - **[Responsive Images](#responsive-images)**: Full support for `srcset` and `sizes`
 - **Throttled Resize**: Efficient resize handling to prevent performance issues
-- **[Event-Driven](#events)**: Dispatches events when images load
-- **Zero Dependencies**: No external libraries required
-- **Shadow DOM**: Fully encapsulated with CSS custom properties
-
 ## Installation
 
 ### npm
