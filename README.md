@@ -214,7 +214,9 @@ The image will load when the `--lazy-img-mq` custom property matches any of the 
 
 ### Attributes
 
-#### Image Attributes (passed to `img`)
+#### Image Attributes
+
+These attributes are passed through to the `<img>` element when loading conditions are met:
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -229,6 +231,8 @@ The image will load when the `--lazy-img-mq` custom property matches any of the 
 | `fetchpriority` | String | - | Resource fetch priority: `"high"`, `"low"`, or `"auto"` |
 | `crossorigin` | String | - | CORS settings: `"anonymous"` or `"use-credentials"` |
 | `referrerpolicy` | String | - | Referrer policy for the image request |
+
+**Note:** The `<img>` element is only created in the shadow DOM when loading conditions are met (or immediately if no conditions are specified). These attributes are applied to the `<img>` at that time.
 
 #### Configuration Attributes
 
