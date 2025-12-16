@@ -76,7 +76,11 @@ const STRING_PROPERTY_REFLECTIONS = [
 	{ property: 'minInlineSize', attribute: 'min-inline-size' },
 	{ property: 'namedBreakpoints', attribute: 'named-breakpoints' },
 	{ property: 'query', attribute: 'query', defaultValue: 'container' },
-	{ property: 'viewRangeStart', attribute: 'view-range-start', defaultValue: 'entry 0%' },
+	{
+		property: 'viewRangeStart',
+		attribute: 'view-range-start',
+		defaultValue: 'entry 0%',
+	},
 ];
 
 const BOOLEAN_PROPERTY_REFLECTIONS = [
