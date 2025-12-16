@@ -61,6 +61,90 @@ function removeWindowResizeCallback(callback) {
 // lazy-img elements share the same view configuration
 const sharedIntersectionObservers = new Map();
 
+const STRING_PROPERTY_REFLECTIONS = [
+	{ property: 'src', attribute: 'src' },
+	{ property: 'alt', attribute: 'alt', defaultValue: '' },
+	{ property: 'srcset', attribute: 'srcset' },
+	{ property: 'sizes', attribute: 'sizes' },
+	{ property: 'width', attribute: 'width' },
+	{ property: 'height', attribute: 'height' },
+	{ property: 'loading', attribute: 'loading' },
+	{ property: 'decoding', attribute: 'decoding' },
+	{ property: 'fetchPriority', attribute: 'fetchpriority' },
+	{ property: 'crossOrigin', attribute: 'crossorigin' },
+	{ property: 'referrerPolicy', attribute: 'referrerpolicy' },
+	{ property: 'minInlineSize', attribute: 'min-inline-size' },
+	{ property: 'namedBreakpoints', attribute: 'named-breakpoints' },
+	{ property: 'query', attribute: 'query', defaultValue: 'container' },
+	{ property: 'viewRangeStart', attribute: 'view-range-start', defaultValue: 'entry 0%' },
+];
+
+const BOOLEAN_PROPERTY_REFLECTIONS = [
+	{ property: 'loaded', attribute: 'loaded', readOnly: true },
+	{ property: 'qualifies', attribute: 'qualifies', readOnly: true },
+];
+
+const REFLECTED_PROPERTY_NAMES = STRING_PROPERTY_REFLECTIONS.filter(
+	({ readOnly }) => !readOnly,
+).map(({ property }) => property);
+
+function definePropertyReflections(elementClass) {
+	const prototype = elementClass.prototype;
+
+	for (const definition of STRING_PROPERTY_REFLECTIONS) {
+		const {
+			property,
+			attribute,
+			defaultValue = null,
+			readOnly = false,
+		} = definition;
+
+		const descriptor = {
+			configurable: true,
+			enumerable: true,
+			get() {
+				const value = this.getAttribute(attribute);
+				return value === null ? defaultValue : value;
+			},
+		};
+
+		if (!readOnly) {
+			descriptor.set = function set(value) {
+				if (value === null || value === undefined) {
+					this.removeAttribute(attribute);
+					return;
+				}
+				this.setAttribute(attribute, String(value));
+			};
+		}
+
+		Object.defineProperty(prototype, property, descriptor);
+	}
+
+	for (const definition of BOOLEAN_PROPERTY_REFLECTIONS) {
+		const { property, attribute, readOnly = false } = definition;
+		const descriptor = {
+			configurable: true,
+			enumerable: true,
+			get() {
+				return this.hasAttribute(attribute);
+			},
+		};
+
+		if (!readOnly) {
+			descriptor.set = function set(value) {
+				if (value) {
+					this.setAttribute(attribute, '');
+					return;
+				}
+				this.removeAttribute(attribute);
+			};
+		}
+
+		Object.defineProperty(prototype, property, descriptor);
+	}
+}
+
 /**
  * Parses view-range-start attribute value into IntersectionObserver options
  * Supports:
@@ -311,10 +395,11 @@ export class LazyImgElement extends HTMLElement {
 	}
 
 	connectedCallback() {
+		this._upgradeReflectedProperties();
 		// Initialize cached attribute values
-		this._namedBreakpoints = this.getAttribute('named-breakpoints');
-		this._minInlineSize = this.getAttribute('min-inline-size');
-		this._queryType = this.getAttribute('query') || 'container';
+		this._namedBreakpoints = this.namedBreakpoints;
+		this._minInlineSize = this.minInlineSize;
+		this._queryType = this.query;
 
 		// Parse and cache breakpoints array to avoid repeated splitting
 		if (this._namedBreakpoints) {
@@ -343,7 +428,7 @@ export class LazyImgElement extends HTMLElement {
 			} else if (name === 'min-inline-size') {
 				this._minInlineSize = newValue;
 			} else if (name === 'query') {
-				this._queryType = newValue || 'container';
+				this._queryType = this.query;
 			}
 
 			// If already loaded and it's a source attribute change, don't allow it
@@ -378,8 +463,7 @@ export class LazyImgElement extends HTMLElement {
 
 		if (queryType === 'view') {
 			// Use shared IntersectionObserver for view-based loading
-			const viewRangeStart =
-				this.getAttribute('view-range-start') || 'entry 0%';
+			const viewRangeStart = this.viewRangeStart;
 			const { rootMargin, threshold } = parseViewRange(viewRangeStart);
 
 			// Store config for cleanup
@@ -473,6 +557,20 @@ export class LazyImgElement extends HTMLElement {
 		if (this._throttleTimeout) {
 			clearTimeout(this._throttleTimeout);
 			this._throttleTimeout = null;
+		}
+	}
+
+	_upgradeReflectedProperties() {
+		for (const property of REFLECTED_PROPERTY_NAMES) {
+			this._upgradeProperty(property);
+		}
+	}
+
+	_upgradeProperty(prop) {
+		if (Object.prototype.hasOwnProperty.call(this, prop)) {
+			const value = this[prop];
+			delete this[prop];
+			this[prop] = value;
 		}
 	}
 
@@ -571,7 +669,7 @@ export class LazyImgElement extends HTMLElement {
 	}
 
 	render() {
-		const src = this.getAttribute('src');
+		const src = this.src;
 
 		// Bail early if no src - img would be invalid
 		if (!src) {
@@ -626,3 +724,5 @@ export class LazyImgElement extends HTMLElement {
 		}
 	}
 }
+
+definePropertyReflections(LazyImgElement);
