@@ -14,7 +14,13 @@ describe('LazyImgElement', () => {
 	});
 
 	afterEach(() => {
-		document.body.removeChild(element);
+		if (element?.isConnected) {
+			element.remove();
+		}
+		document.body.innerHTML = '';
+		document.documentElement.style.removeProperty('--lazy-img-mq');
+		vi.restoreAllMocks();
+		element = null;
 	});
 
 	describe('Basic functionality', () => {
@@ -29,6 +35,29 @@ describe('LazyImgElement', () => {
 
 		it('should have a shadow root', () => {
 			expect(element.shadowRoot).toBeTruthy();
+		});
+	});
+
+	describe('Shadow DOM best practices', () => {
+		it('creates shadow root during construction', () => {
+			const instance = new LazyImgElement();
+			expect(instance.shadowRoot).toBeTruthy();
+		});
+
+		it('supports hidden attribute on the host element', () => {
+			element.setAttribute('src', 'test.jpg');
+			element.setAttribute('hidden', '');
+			const style = element.shadowRoot.querySelector('style');
+			expect(element.hidden).toBe(true);
+			expect(style.textContent).toContain(':host([hidden])');
+		});
+
+		it('applies the default display style from CSS', () => {
+			element.setAttribute('src', 'test.jpg');
+			const style = element.shadowRoot.querySelector('style');
+			expect(style.textContent).toContain(
+				'display: var(--lazy-img-display, block);',
+			);
 		});
 	});
 
