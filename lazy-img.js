@@ -375,6 +375,10 @@ export class LazyImgElement extends HTMLElement {
 	constructor() {
 		super();
 		this.attachShadow({ mode: 'open' });
+		this._internals =
+			typeof this.attachInternals === 'function'
+				? this.attachInternals()
+				: null;
 		this._loaded = false;
 		this._resizeObserver = null;
 		this._throttleTimeout = null;
@@ -390,6 +394,9 @@ export class LazyImgElement extends HTMLElement {
 		this._styleElement.textContent = `
 			:host {
 				display: var(--lazy-img-display, block);
+			}
+			:host([hidden]) {
+				display: none;
 			}
 			img {
 				max-width: 100%;
@@ -578,6 +585,12 @@ export class LazyImgElement extends HTMLElement {
 		}
 	}
 
+	_markInternalsRendered() {
+		if (this._internals) {
+			this._internals.isRendered = true;
+		}
+	}
+
 	_throttledResize(callback) {
 		if (this._throttleTimeout) {
 			clearTimeout(this._throttleTimeout);
@@ -682,6 +695,7 @@ export class LazyImgElement extends HTMLElement {
 			if (img) {
 				img.remove();
 			}
+			this._markInternalsRendered();
 			return;
 		}
 
@@ -726,6 +740,8 @@ export class LazyImgElement extends HTMLElement {
 				existingImg.remove();
 			}
 		}
+
+		this._markInternalsRendered();
 	}
 }
 
