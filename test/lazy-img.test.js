@@ -119,6 +119,36 @@ describe('LazyImgElement', () => {
 		});
 	});
 
+	describe('Properties', () => {
+		it('reflects src property to attribute and render output', () => {
+			element.src = 'property.jpg';
+			element.alt = 'Property image';
+			const img = element.shadowRoot.querySelector('img');
+			expect(element.getAttribute('src')).toBe('property.jpg');
+			expect(img.getAttribute('src')).toBe('property.jpg');
+		});
+
+		it('reflects camelCase image properties to dashed attributes', () => {
+			element.crossOrigin = 'anonymous';
+			expect(element.getAttribute('crossorigin')).toBe('anonymous');
+			element.fetchPriority = 'high';
+			expect(element.getAttribute('fetchpriority')).toBe('high');
+		});
+
+		it('provides default query and viewRangeStart values', () => {
+			expect(element.query).toBe('container');
+			expect(element.viewRangeStart).toBe('entry 0%');
+		});
+
+		it('exposes read-only boolean state properties', () => {
+			expect(element.loaded).toBe(false);
+			element.setAttribute('loaded', '');
+			expect(element.loaded).toBe(true);
+			element.setAttribute('qualifies', '');
+			expect(element.qualifies).toBe(true);
+		});
+	});
+
 	describe('Immediate loading (no conditions)', () => {
 		it('should load image immediately when no min-inline-size or named-breakpoints', () => {
 			element.setAttribute('src', 'immediate.jpg');
