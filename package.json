@@ -20,12 +20,15 @@
 	"type": "module",
 	"main": "index.js",
 	"module": "lazy-img.js",
+	"types": "lazy-img.d.ts",
 	"customElements": "custom-elements.json",
 	"exports": {
 		".": {
+			"types": "./lazy-img.d.ts",
 			"import": "./index.js"
 		},
 		"./lazy-img.js": {
+			"types": "./lazy-img.d.ts",
 			"import": "./lazy-img.js"
 		},
 		"./define.js": {
@@ -35,6 +38,7 @@
 	},
 	"files": [
 		"lazy-img.js",
+		"lazy-img.d.ts",
 		"define.js",
 		"index.js",
 		"custom-elements.json",
@@ -42,10 +46,9 @@
 		"LICENSE"
 	],
 	"engines": {
-		"node": ">=20.0.0"
+		"node": ">=22.0.0"
 	},
 	"scripts": {
-		"setup": "node scripts/setup.js",
 		"test": "vitest",
 		"test:ui": "vitest --ui",
 		"test:run": "vitest run",
