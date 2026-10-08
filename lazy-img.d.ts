@@ -18,8 +18,6 @@ export declare class LazyImgElement extends HTMLElement {
 	readonly qualifies: boolean;
 }
 
-export declare function defineLazyImg(tagName?: string): boolean;
-
 declare global {
 	interface HTMLElementTagNameMap {
 		'lazy-img': LazyImgElement;
