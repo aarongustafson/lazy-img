@@ -11,12 +11,13 @@ Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-la
 [Live Demo](https://aarongustafson.github.io/lazy-img/demo/) ([Source](./demo/index.html))
 
 **CDN Demos:**
+
 - [unpkg](https://aarongustafson.github.io/lazy-img/demo/unpkg.html) ([Source](./demo/unpkg.html))
 - [esm.sh](https://aarongustafson.github.io/lazy-img/demo/esm.html) ([Source](./demo/esm.html))
 
 ## Why Use This?
 
-**Performance Benefit:** Unlike `picture` or `srcset` which always load *some* image variant, `lazy-img` can **completely skip loading images** on screens or containers below your specified threshold. This saves bandwidth and improves performance for users on smaller devices or slower connections.
+**Performance Benefit:** Unlike `picture` or `srcset` which always load _some_ image variant, `lazy-img` can **completely skip loading images** on screens or containers below your specified threshold. This saves bandwidth and improves performance for users on smaller devices or slower connections.
 
 For example, if you set `min-inline-size="768"`, mobile users will never download that image at all — saving their data and speeding up your page load.
 
@@ -30,6 +31,7 @@ For example, if you set `min-inline-size="768"`, mobile users will never downloa
 - **[Named Breakpoints](#named-breakpoints)**: Support for named breakpoints via CSS custom properties
 - **[Responsive Images](#responsive-images)**: Full support for `srcset` and `sizes`
 - **Throttled Resize**: Efficient resize handling to prevent performance issues
+
 ## Installation
 
 ### npm
@@ -41,6 +43,7 @@ npm install @aarongustafson/lazy-img
 ### Import
 
 **Option 1: Manual registration**
+
 ```javascript
 import { LazyImgElement } from '@aarongustafson/lazy-img';
 
@@ -48,6 +51,7 @@ customElements.define('lazy-img', LazyImgElement);
 ```
 
 **Option 2: Auto-define (browser environments only)**
+
 ```javascript
 import '@aarongustafson/lazy-img/define.js';
 // Registers <lazy-img> when customElements is available
@@ -64,7 +68,10 @@ defineLazyImg();
 You can also include the guarded script from HTML:
 
 ```html
-<script src="./node_modules/@aarongustafson/lazy-img/define.js" type="module"></script>
+<script
+  src="./node_modules/@aarongustafson/lazy-img/define.js"
+  type="module"
+></script>
 ```
 
 ## Usage
@@ -74,10 +81,7 @@ You can also include the guarded script from HTML:
 [View Demo](https://aarongustafson.github.io/lazy-img/demo/#basic-example)
 
 ```html
-<lazy-img
-  src="image.jpg"
-  alt="A beautiful image">
-</lazy-img>
+<lazy-img src="image.jpg" alt="A beautiful image"> </lazy-img>
 ```
 
 ### Container Query (Default)
@@ -87,10 +91,7 @@ You can also include the guarded script from HTML:
 Load an image when its container reaches a minimum width:
 
 ```html
-<lazy-img
-  src="large-image.jpg"
-  alt="Large image"
-  min-inline-size="500">
+<lazy-img src="large-image.jpg" alt="Large image" min-inline-size="500">
 </lazy-img>
 ```
 
@@ -107,7 +108,8 @@ Load an image based on viewport width:
   src="desktop-image.jpg"
   alt="Desktop image"
   min-inline-size="768"
-  query="media">
+  query="media"
+>
 </lazy-img>
 ```
 
@@ -118,10 +120,7 @@ The image will load when the browser window is at least 768px wide.
 Load images when they scroll into view using IntersectionObserver:
 
 ```html
-<lazy-img
-  src="image.jpg"
-  alt="Loads when scrolled into view"
-  query="view">
+<lazy-img src="image.jpg" alt="Loads when scrolled into view" query="view">
 </lazy-img>
 ```
 
@@ -130,26 +129,31 @@ The image will load when it enters the viewport. The default behavior (`view-ran
 #### Control When Images Load
 
 **Load when 50% visible:**
+
 ```html
 <lazy-img
   src="image.jpg"
   alt="Loads when half visible"
   query="view"
-  view-range-start="entry 50%">
+  view-range-start="entry 50%"
+>
 </lazy-img>
 ```
 
 **Preload before entering viewport:**
+
 ```html
 <lazy-img
   src="image.jpg"
   alt="Preloads 200px before visible"
   query="view"
-  view-range-start="entry -200px">
+  view-range-start="entry -200px"
+>
 </lazy-img>
 ```
 
 The `view-range-start` attribute uses scroll-driven animation syntax:
+
 - `"entry X%"` - Load when X% of the element is visible (e.g., `"entry 25%"` = 25% visible)
 - `"entry -Xpx"` - Preload X pixels before entering viewport (e.g., `"entry -300px"` = load 300px before visible)
 
@@ -171,7 +175,8 @@ Use `srcset` and `sizes` for responsive images:
          (max-width: 1000px) 800px,
          1200px"
   alt="Responsive image"
-  min-inline-size="400">
+  min-inline-size="400"
+>
 </lazy-img>
 ```
 
@@ -204,7 +209,8 @@ You can use named breakpoints by defining the `--lazy-img-mq` CSS custom propert
   src="image.jpg"
   alt="Image with named breakpoints"
   named-breakpoints="medium, large"
-  query="media">
+  query="media"
+>
 </lazy-img>
 ```
 
@@ -218,36 +224,36 @@ The image will load when the `--lazy-img-mq` custom property matches any of the 
 
 These attributes are passed through to the `<img>` element when loading conditions are met:
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `src` | String | - | **Required.** The image source URL |
-| `alt` | String | `""` | Alternative text for the image |
-| `srcset` | String | - | Responsive image source set |
-| `sizes` | String | - | Responsive image sizes |
-| `width` | String (Number) | - | Intrinsic width of the image (helps prevent layout shift) |
-| `height` | String (Number) | - | Intrinsic height of the image (helps prevent layout shift) |
-| `loading` | String | - | Native lazy loading hint: `"lazy"` or `"eager"` |
-| `decoding` | String | - | Image decoding hint: `"async"`, `"sync"`, or `"auto"` |
-| `fetchpriority` | String | - | Resource fetch priority: `"high"`, `"low"`, or `"auto"` |
-| `crossorigin` | String | - | CORS settings: `"anonymous"` or `"use-credentials"` |
-| `referrerpolicy` | String | - | Referrer policy for the image request |
+| Attribute        | Type            | Default | Description                                                |
+| ---------------- | --------------- | ------- | ---------------------------------------------------------- |
+| `src`            | String          | -       | **Required.** The image source URL                         |
+| `alt`            | String          | `""`    | Alternative text for the image                             |
+| `srcset`         | String          | -       | Responsive image source set                                |
+| `sizes`          | String          | -       | Responsive image sizes                                     |
+| `width`          | String (Number) | -       | Intrinsic width of the image (helps prevent layout shift)  |
+| `height`         | String (Number) | -       | Intrinsic height of the image (helps prevent layout shift) |
+| `loading`        | String          | -       | Native lazy loading hint: `"lazy"` or `"eager"`            |
+| `decoding`       | String          | -       | Image decoding hint: `"async"`, `"sync"`, or `"auto"`      |
+| `fetchpriority`  | String          | -       | Resource fetch priority: `"high"`, `"low"`, or `"auto"`    |
+| `crossorigin`    | String          | -       | CORS settings: `"anonymous"` or `"use-credentials"`        |
+| `referrerpolicy` | String          | -       | Referrer policy for the image request                      |
 
 **Note:** The `<img>` element is only created in the shadow DOM when loading conditions are met (or immediately if no conditions are specified). These attributes are applied to the `<img>` at that time.
 
 #### Configuration Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `min-inline-size` | String (Number) | - | Minimum inline size in pixels to load the image (ignored in view mode) |
-| `named-breakpoints` | String | - | Comma-separated list of named breakpoints (reads from `--lazy-img-mq` CSS custom property, ignored in view mode) |
-| `query` | String | `"container"` | Query type: `"container"`, `"media"`, or `"view"` |
-| `view-range-start` | String | `"entry 0%"` | When to load in view mode: `"entry X%"` for threshold or `"entry -Xpx"` for preload margin |
+| Attribute           | Type            | Default       | Description                                                                                                      |
+| ------------------- | --------------- | ------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `min-inline-size`   | String (Number) | -             | Minimum inline size in pixels to load the image (ignored in view mode)                                           |
+| `named-breakpoints` | String          | -             | Comma-separated list of named breakpoints (reads from `--lazy-img-mq` CSS custom property, ignored in view mode) |
+| `query`             | String          | `"container"` | Query type: `"container"`, `"media"`, or `"view"`                                                                |
+| `view-range-start`  | String          | `"entry 0%"`  | When to load in view mode: `"entry X%"` for threshold or `"entry -Xpx"` for preload margin                       |
 
 #### State Attributes (read-only)
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `loaded` | Boolean | Reflects whether the image has been loaded |
+| Attribute   | Type    | Description                                                                            |
+| ----------- | ------- | -------------------------------------------------------------------------------------- |
+| `loaded`    | Boolean | Reflects whether the image has been loaded                                             |
 | `qualifies` | Boolean | Reflects whether element currently meets conditions to display (not used in view mode) |
 
 ### Query Types
@@ -260,8 +266,8 @@ These attributes are passed through to the `<img>` element when loading conditio
 
 [View Demo](https://aarongustafson.github.io/lazy-img/demo/#events)
 
-| Event | Detail | Description |
-|-------|--------|-------------|
+| Event             | Detail            | Description                     |
+| ----------------- | ----------------- | ------------------------------- |
 | `lazy-img:loaded` | `{ src: string }` | Fired when the image has loaded |
 
 #### Event Example
@@ -275,10 +281,10 @@ lazyImg.addEventListener('lazy-img:loaded', (event) => {
 
 ### CSS Custom Properties
 
-| Property | Default | Description |
-|----------|---------|-------------|
-| `--lazy-img-display` | `block` | Display mode for the component |
-| `--lazy-img-mq` | - | Current named breakpoint identifier (define on `:root` with `@media` queries) |
+| Property             | Default | Description                                                                   |
+| -------------------- | ------- | ----------------------------------------------------------------------------- |
+| `--lazy-img-display` | `block` | Display mode for the component                                                |
+| `--lazy-img-mq`      | -       | Current named breakpoint identifier (define on `:root` with `@media` queries) |
 
 #### CSS Example
 
@@ -311,7 +317,8 @@ lazy-img {
   alt="A beautiful image"
   width="800"
   height="600"
-  min-inline-size="768">
+  min-inline-size="768"
+>
 </lazy-img>
 ```
 
@@ -326,7 +333,8 @@ The `width` and `height` attributes help browsers calculate the aspect ratio and
   width="1200"
   height="600"
   fetchpriority="high"
-  loading="eager">
+  loading="eager"
+>
 </lazy-img>
 ```
 
@@ -339,7 +347,8 @@ Use `fetchpriority="high"` for above-the-fold images that are critical for Large
   src="https://cdn.example.com/image.jpg"
   alt="CDN image"
   crossorigin="anonymous"
-  min-inline-size="500">
+  min-inline-size="500"
+>
 </lazy-img>
 ```
 
@@ -359,7 +368,7 @@ lazy-img[loaded]:not([qualifies]) {
 
 /* Show a placeholder for images that qualify but haven't loaded yet */
 lazy-img[qualifies]:not([loaded])::before {
-  content: "Loading...";
+  content: 'Loading...';
   display: block;
   padding: 2em;
   background: #f0f0f0;
@@ -377,7 +386,6 @@ lazy-img:not([qualifies]) {
 }
 ```
 
-
 ### Progressive Image Loading in Containers
 
 ```html
@@ -388,10 +396,7 @@ lazy-img:not([qualifies]) {
 </style>
 
 <div class="sidebar">
-  <lazy-img
-    src="sidebar-image.jpg"
-    alt="Sidebar content"
-    min-inline-size="300">
+  <lazy-img src="sidebar-image.jpg" alt="Sidebar content" min-inline-size="300">
   </lazy-img>
 </div>
 ```
@@ -400,10 +405,24 @@ lazy-img:not([qualifies]) {
 
 ```css
 /* Define breakpoints in your CSS */
-:root { --lazy-img-mq: small; }
-@media (min-width: 768px) { :root { --lazy-img-mq: medium; } }
-@media (min-width: 1024px) { :root { --lazy-img-mq: large; } }
-@media (min-width: 1440px) { :root { --lazy-img-mq: xlarge; } }
+:root {
+  --lazy-img-mq: small;
+}
+@media (min-width: 768px) {
+  :root {
+    --lazy-img-mq: medium;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --lazy-img-mq: large;
+  }
+}
+@media (min-width: 1440px) {
+  :root {
+    --lazy-img-mq: xlarge;
+  }
+}
 ```
 
 ```html
@@ -411,14 +430,16 @@ lazy-img:not([qualifies]) {
   src="portrait.jpg"
   alt="Portrait orientation"
   named-breakpoints="small, medium"
-  query="media">
+  query="media"
+>
 </lazy-img>
 
 <lazy-img
   src="landscape.jpg"
   alt="Landscape orientation"
   named-breakpoints="large, xlarge"
-  query="media">
+  query="media"
+>
 </lazy-img>
 ```
 
@@ -439,10 +460,7 @@ If you don't specify `min-inline-size` or `named-breakpoints`, the image loads i
 ### Container-Based Loading (Default)
 
 ```html
-<lazy-img
-  src="image.jpg"
-  alt="Container-based"
-  min-inline-size="400">
+<lazy-img src="image.jpg" alt="Container-based" min-inline-size="400">
 </lazy-img>
 ```
 
@@ -453,7 +471,8 @@ If you don't specify `min-inline-size` or `named-breakpoints`, the image loads i
   src="image.jpg"
   alt="Viewport-based"
   min-inline-size="768"
-  query="media">
+  query="media"
+>
 </lazy-img>
 ```
 
@@ -464,13 +483,48 @@ If you don't specify `min-inline-size` or `named-breakpoints`, the image loads i
   src="image.jpg"
   alt="Scroll-based"
   query="view"
-  view-range-start="entry -100px">
+  view-range-start="entry -100px"
+>
 </lazy-img>
 ```
+
+## Demo styling and validation
+
+The component supplies no color palette or controls. Its image keeps the
+authored alternative text; use native images for essential content that must
+remain available without JavaScript.
+
+The [demos](demo/index.html) pair reading surfaces with `CanvasText`/`Canvas`,
+inline code with `ButtonText`/`ButtonFace`, and code blocks with
+`FieldText`/`Field`. Supporting text inherits its surface’s foreground. The
+Canvas-backed footer uses an 80% foreground mix, with full-strength text in
+forced colors, increased contrast, or browsers without `color-mix()`.
+Loading states have text and border-style cues, not just colored borders.
+Width sliders preserve native keyboard behavior and focus.
+
+The demos describe `loaded` and `lazy-img:loaded` as request-start signals:
+they don’t confirm a successful download. The failure example retains an
+authored description and recovery link. Demo messages are authored in the page
+and can be translated there; the component generates no status strings.
+
+Run `npm run test:run`, `npm run lint`, and `npm run test:browser`.
+Browser tests use one worker on port 4184 and cover Chromium, Firefox, and
+WebKit, including 19 distinct study palettes representing 62 observations,
+light/dark rendering, native focus, narrow layouts, enlarged text, image
+failure, and no-JavaScript behavior. CDN tests substitute local module and image
+responses, so they don’t establish live CDN availability.
+
+Palette substitution and Chromium forced-color emulation are regression aids,
+not evidence of OS repainting or accessibility conformance. Real Windows
+Contrast themes, Firefox custom forced-color preferences, Android/iOS browsers,
+macOS Increase Contrast/accent changes, physical zoom, and assistive-technology
+acceptance still need manual checks. Ubuntu WebKit’s known dark
+`ButtonText`/`ButtonFace` limitation is tracked separately from reading surfaces.
 
 ## Browser Support
 
 Works in all modern browsers supporting:
+
 - Custom Elements v1
 - Shadow DOM v1
 - ResizeObserver (for container queries)
@@ -484,11 +538,13 @@ For legacy browser support, consider polyfills for Custom Elements, ResizeObserv
 If you're migrating from the original Easy Lazy Images script:
 
 **Before:**
+
 ```html
-<div data-image-src="image.jpg"
-     data-image-alt="Alt text"
-     data-image-srcset="image-400.jpg 400w, image-800.jpg 800w">
-</div>
+<div
+  data-image-src="image.jpg"
+  data-image-alt="Alt text"
+  data-image-srcset="image-400.jpg 400w, image-800.jpg 800w"
+></div>
 
 <script>
   window.easyLazyImages(500);
@@ -496,17 +552,20 @@ If you're migrating from the original Easy Lazy Images script:
 ```
 
 **After:**
+
 ```html
 <lazy-img
   src="image.jpg"
   alt="Alt text"
   srcset="image-400.jpg 400w, image-800.jpg 800w"
   min-inline-size="500"
-  query="media">
+  query="media"
+>
 </lazy-img>
 ```
 
 Key differences:
+
 - Uses a custom element instead of a global function
 - Configuration is per-element via attributes
 - Default query type is `container` (not `media`)

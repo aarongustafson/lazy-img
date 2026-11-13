@@ -8,19 +8,12 @@
 		<style>
 			/* Demo-specific styles */
 			.demo-container {
+				box-sizing: content-box;
 				container-type: inline-size;
-				border: 2px dashed #ccc;
+				border: 2px dashed CanvasText;
 				padding: 1rem;
 				margin: 1rem 0;
-			}
-			.demo-container.small {
-				max-width: 400px;
-			}
-			.demo-container.medium {
-				max-width: 768px;
-			}
-			.demo-container.large {
-				max-width: 1200px;
+				max-inline-size: calc(100% - 2rem - 4px);
 			}
 			.container-info {
 				background: Canvas;
@@ -35,13 +28,14 @@
 				background: Canvas;
 				color: CanvasText;
 				margin-top: 0.5rem;
-				border-left: 3px solid #10b981;
+				border-left: 3px dashed CanvasText;
+				padding-inline-start: 0.5rem;
 				font-family: monospace;
 			}
 			.load-time-display.loaded {
 				background: Canvas;
 				color: CanvasText;
-				border-left-color: #3b82f6;
+				border-left-style: solid;
 			}
 
 			/* Named breakpoint CSS custom property */
@@ -64,15 +58,22 @@
 		<header>
 			<h1><code>lazy-img</code> Web Component Demo</h1>
 			<p>
-				Web component that enables you tolazy load images based on
+				Web component that enables you to lazy load images based on
 				container size, viewport size, or scroll position. See the
-				<a
-					href="../"
-					>README</a
-				>
+				<a href="../">README</a>
 				for installation and API documentation.
 			</p>
-			<p style="padding: 1rem; border-left: 4px solid #f59e0b">
+		</header>
+
+		<main>
+			<noscript
+				><p class="note">
+					JavaScript is unavailable. Optional images stay unloaded;
+					the code examples and image links remain available. Use a
+					standard image for essential content.
+				</p></noscript
+			>
+			<p class="note">
 				<strong>Performance Benefit:</strong> Unlike
 				<code>picture</code> or <code>srcset</code> which always load
 				<em>some</em> image, <code>lazy-img</code> can completely skip
@@ -80,7 +81,7 @@
 				bandwidth and improves performance for users on smaller devices
 				or slower connections.
 			</p>
-			<p style="padding: 1rem; border-left: 4px solid #10b981">
+			<p class="note">
 				<strong>Note on Resize Behavior:</strong> Once an image is
 				loaded, it remains loaded even if the viewport or container is
 				resized below the threshold. This is intentional for performance
@@ -89,20 +90,11 @@
 				<code>loaded</code> and <code>qualifies</code> attributes to
 				control visibility with CSS if needed.
 			</p>
-		</header>
-
-		<main>
 			<!-- Basic Example -->
 			<section id="basic-example">
 				<h2>Basic Example</h2>
 				<p>Simple image that loads immediately (no conditions).</p>
-				<p
-					style="
-						padding: 0.75rem;
-						border-radius: 4px;
-						border-left: 4px solid #f59e0b;
-					"
-				>
+				<p class="note">
 					<strong>💡 Performance Note:</strong> While this pattern
 					loads the image immediately (like a standard
 					<code>img</code>), it still provides a benefit:
@@ -149,8 +141,9 @@
 				</p>
 				<p style="padding: 0.75rem; border-radius: 4px">
 					<strong>Try it:</strong> Each container below starts smaller
-					than needed. Drag the resize handle (bottom-right corner) to
-					widen the container and watch the image lazy load when it
+					than needed. Use its labeled width slider (arrow keys, Home,
+					and End), or drag the resize handle (bottom-right corner),
+					to widen the container and watch the image lazy load when it
 					hits the threshold.
 				</p>
 
@@ -168,6 +161,16 @@
   min-inline-size="300"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
+							<label for="width-1">Width of container 1</label>
+							<input
+								id="width-1"
+								type="range"
+								min="150"
+								max="550"
+								step="10"
+								value="200"
+								data-resize="container-1"
+							/>
 							<div
 								id="container-1"
 								class="demo-container small"
@@ -212,6 +215,16 @@
   min-inline-size="500"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
+							<label for="width-2">Width of container 2</label>
+							<input
+								id="width-2"
+								type="range"
+								min="150"
+								max="550"
+								step="10"
+								value="350"
+								data-resize="container-2"
+							/>
 							<div
 								id="container-2"
 								class="demo-container medium"
@@ -338,7 +351,10 @@
 							>
 							</lazy-img>
 							<p id="view-status-1" class="load-time-display">
-								<small>Image not loaded yet</small>
+								<small
+									>Image not requested yet (requires
+									JavaScript).</small
+								>
 							</p>
 						</div>
 					</div>
@@ -377,7 +393,10 @@
 							>
 							</lazy-img>
 							<p id="view-status-2" class="load-time-display">
-								<small>Image not loaded yet</small>
+								<small
+									>Image not requested yet (requires
+									JavaScript).</small
+								>
 							</p>
 						</div>
 					</div>
@@ -417,7 +436,10 @@
 							>
 							</lazy-img>
 							<p id="view-status-3" class="load-time-display">
-								<small>Image not loaded yet</small>
+								<small
+									>Image not requested yet (requires
+									JavaScript).</small
+								>
 							</p>
 						</div>
 					</div>
@@ -452,6 +474,18 @@
   min-inline-size="400"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
+							<label for="width-3"
+								>Width of responsive-image container</label
+							>
+							<input
+								id="width-3"
+								type="range"
+								min="150"
+								max="550"
+								step="10"
+								value="300"
+								data-resize="container-3"
+							/>
 							<div
 								id="container-3"
 								class="demo-container large"
@@ -562,7 +596,9 @@
 				<h2>Events</h2>
 				<p>
 					The component dispatches a
-					<code>lazy-img:loaded</code> event when the image loads.
+					<code>lazy-img:loaded</code> event when it creates the image
+					and starts its request. This event does not confirm that the
+					image downloaded or decoded.
 				</p>
 
 				<div class="demo-section">
@@ -586,6 +622,18 @@ document.getElementById('event-demo')
   });
 &lt;/script&gt;</code></pre>
 						<div class="demo">
+							<label for="width-4"
+								>Width of event container</label
+							>
+							<input
+								id="width-4"
+								type="range"
+								min="150"
+								max="550"
+								step="10"
+								value="250"
+								data-resize="container-4"
+							/>
 							<div
 								id="container-4"
 								class="demo-container small"
@@ -615,8 +663,8 @@ document.getElementById('event-demo')
 								</lazy-img>
 								<p id="event-status">
 									<small
-										>Event status: waiting for
-										load...</small
+										>Event status: waiting for a request
+										(requires JavaScript).</small
 									>
 								</p>
 							</div>
@@ -631,7 +679,7 @@ document.getElementById('event-demo')
 				<p>
 					The component provides two boolean attributes to track
 					state:
-					<code>loaded</code> (has the image been loaded?) and
+					<code>loaded</code> (has the image request started?) and
 					<code>qualifies</code> (does it currently meet conditions to
 					show?). These allow you to control visibility with CSS.
 				</p>
@@ -649,20 +697,14 @@ document.getElementById('event-demo')
 							lazy-img[loaded]:not([qualifies]) {
 							display: none;
 						}
-						#state-demo-container
-							lazy-img[qualifies]:not([loaded])::before {
-							content: '⏳ Waiting to load...';
-							display: block;
-							padding: 2em;
-							text-align: center;
-							color: #666;
-						}
 						#state-demo-container .state-indicator {
 							font-family: monospace;
 							font-size: 0.85em;
 							padding: 0.5rem;
 							margin-top: 0.5rem;
-							border-left: 3px solid #3b82f6;
+							background: Canvas;
+							color: CanvasText;
+							border-left: 3px solid CanvasText;
 						}
 					</style>
 
@@ -673,13 +715,6 @@ document.getElementById('event-demo')
     display: none;
   }
 
-  /* Show placeholder when qualifies but not loaded */
-  lazy-img[qualifies]:not([loaded])::before {
-    content: '⏳ Waiting to load...';
-    display: block;
-    padding: 2em;
-    background: #f0f0f0;
-  }
 &lt;/style&gt;
 
 &lt;lazy-img
@@ -688,6 +723,18 @@ document.getElementById('event-demo')
   min-inline-size="400"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
+							<label for="width-state"
+								>Width of state container</label
+							>
+							<input
+								id="width-state"
+								type="range"
+								min="150"
+								max="550"
+								step="10"
+								value="300"
+								data-resize="state-demo-container"
+							/>
 							<div
 								id="state-demo-container"
 								class="demo-container small"
@@ -718,11 +765,53 @@ document.getElementById('event-demo')
 								<div class="state-indicator">
 									State:
 									<strong id="state-display"
-										>Not loaded, doesn't qualify</strong
+										>Not requested; requires JavaScript to
+										check conditions.</strong
 									>
 								</div>
 							</div>
 						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="demo-section" id="failure-example">
+				<h2>Failure and no-JavaScript fallback</h2>
+				<p>
+					Keep essential content in a native image. Optional images
+					can fail to download even after <code>loaded</code> is set.
+					This intentionally missing image keeps an authored
+					description and recovery link available.
+				</p>
+				<div class="code-demo-pair">
+					<pre><code>&lt;lazy-img src="./missing-image.jpg"
+  alt="Mountain trail at sunrise"&gt;&lt;/lazy-img&gt;
+&lt;p&gt;If the image is unavailable:
+  mountain trail at sunrise.
+  &lt;a href="./sample.svg"&gt;Open an alternative image&lt;/a&gt;
+&lt;/p&gt;</code></pre>
+					<div class="demo">
+						<lazy-img
+							src="./missing-image.jpg"
+							alt="Mountain trail at sunrise"
+						></lazy-img>
+						<p>
+							If the image is unavailable: mountain trail at
+							sunrise.
+							<a href="./sample.svg">Open an alternative image</a
+							>.
+						</p>
+						<figure>
+							<img
+								src="./sample.svg"
+								width="800"
+								height="400"
+								alt="A mountain trail at sunrise, shown as a simple illustration"
+							/>
+							<figcaption>
+								This essential image works without JavaScript.
+							</figcaption>
+						</figure>
 					</div>
 				</div>
 			</section>
@@ -733,10 +822,7 @@ document.getElementById('event-demo')
 				<p>
 					For complete documentation of attributes, events, and
 					browser support, see the
-					<a
-						href="../"
-						>README</a
-					>.
+					<a href="../">README</a>.
 				</p>
 			</section>
 		</main>
@@ -752,17 +838,6 @@ document.getElementById('event-demo')
 
 		<script src="../define.js" type="module"></script>
 		<script>
-			// Track initialization time for each lazy-img element
-			const initTimes = new WeakMap();
-
-			// Store init time when elements are created
-			document.addEventListener('DOMContentLoaded', () => {
-				const lazyImages = document.querySelectorAll('lazy-img');
-				lazyImages.forEach((img) => {
-					initTimes.set(img, performance.now());
-				});
-			});
-
 			// Track load times for view mode demos
 			function setupLoadTimeTracking(imgId, statusId) {
 				const img = document.getElementById(imgId);
@@ -770,14 +845,14 @@ document.getElementById('event-demo')
 
 				if (img && status) {
 					const initTime = performance.now();
-					initTimes.set(img, initTime);
 
 					img.addEventListener('lazy-img:loaded', (e) => {
 						const loadTime = performance.now();
 						const elapsed = ((loadTime - initTime) / 1000).toFixed(
 							2,
 						);
-						status.innerHTML = `<small>✅ Loaded after <strong>${elapsed}s</strong> - ${e.detail.src}</small>`;
+						status.querySelector('small').textContent =
+							`Request started after ${elapsed}s — ${e.detail.src}. Download success is not confirmed by this event.`;
 						status.classList.add('loaded');
 						console.log(
 							`${imgId} loaded after ${elapsed}s:`,
@@ -815,6 +890,15 @@ document.getElementById('event-demo')
 			updateCurrentMQ();
 			window.addEventListener('resize', updateCurrentMQ);
 
+			document.querySelectorAll('[data-resize]').forEach((slider) => {
+				slider.addEventListener('input', () => {
+					const container = document.getElementById(
+						slider.dataset.resize,
+					);
+					container.style.width = `${slider.value}px`;
+				});
+			});
+
 			// Container width tracking
 			const widthTrackers = document.querySelectorAll('.width-tracker');
 			const resizeObservers = new Map();
@@ -845,7 +929,8 @@ document.getElementById('event-demo')
 				eventDemo.addEventListener('lazy-img:loaded', (e) => {
 					const status = document.getElementById('event-status');
 					if (status) {
-						status.innerHTML = `<small>✅ Event fired! Image loaded: ${e.detail.src}</small>`;
+						status.querySelector('small').textContent =
+							`Event fired: request started for ${e.detail.src}. Download success is not confirmed by this event.`;
 					}
 					console.log('Image loaded:', e.detail.src);
 				});
@@ -862,14 +947,15 @@ document.getElementById('event-demo')
 
 					let stateText = '';
 					if (loaded && qualifies) {
-						stateText = '✅ Loaded & qualifies (visible)';
+						stateText =
+							'Requested and qualifies (visible). Download success is not confirmed.';
 					} else if (loaded && !qualifies) {
 						stateText =
-							"⚠️ Loaded but doesn't qualify (hidden by CSS)";
+							"Requested but doesn't qualify (hidden by CSS).";
 					} else if (!loaded && qualifies) {
-						stateText = '🔄 Not loaded yet, but qualifies';
+						stateText = 'Not requested yet, but qualifies.';
 					} else {
-						stateText = "❌ Not loaded, doesn't qualify";
+						stateText = "Not requested; doesn't qualify.";
 					}
 
 					stateDisplay.textContent = stateText;
@@ -877,14 +963,22 @@ document.getElementById('event-demo')
 			}
 
 			// Use MutationObserver to watch for attribute changes
+			const stateObserver = new MutationObserver(updateStateDisplay);
 			if (stateDemoImg) {
-				const observer = new MutationObserver(updateStateDisplay);
-				observer.observe(stateDemoImg, {
+				stateObserver.observe(stateDemoImg, {
 					attributes: true,
 					attributeFilter: ['loaded', 'qualifies'],
 				});
 				updateStateDisplay(); // Initial update
 			}
+
+			window.addEventListener('pagehide', (event) => {
+				if (event.persisted) return;
+				resizeObservers.forEach((observer) => observer.disconnect());
+				stateObserver.disconnect();
+				window.removeEventListener('resize', updateViewportWidth);
+				window.removeEventListener('resize', updateCurrentMQ);
+			});
 		</script>
 	</body>
 </html>

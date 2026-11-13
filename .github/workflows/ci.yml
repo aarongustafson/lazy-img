@@ -38,3 +38,11 @@ jobs:
       - name: Generate coverage report
         run: npm run test:coverage
         if: matrix.node-version == '22.x'
+
+      - name: Install browser engines
+        run: npx playwright install --with-deps chromium firefox webkit
+        if: matrix.node-version == '22.x'
+
+      - name: Run browser regressions
+        run: npm run test:browser
+        if: matrix.node-version == '22.x'
