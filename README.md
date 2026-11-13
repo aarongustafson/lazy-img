@@ -1,6 +1,10 @@
 # Lazy Img Web Component
 
-[![npm version](https://img.shields.io/npm/v/@aarongustafson/lazy-img.svg)](https://www.npmjs.com/package/@aarongustafson/lazy-img) [![Build Status](https://img.shields.io/github/actions/workflow/status/aarongustafson/lazy-img/ci.yml?branch=main)](https://github.com/aarongustafson/lazy-img/actions)
+[![npm version](https://img.shields.io/npm/v/@aarongustafson/lazy-img.svg)](https://www.npmjs.com/package/@aarongustafson/lazy-img)
+[![CI status](https://img.shields.io/github/actions/workflow/status/aarongustafson/lazy-img/ci.yml?branch=main&label=CI)](https://github.com/aarongustafson/lazy-img/actions/workflows/ci.yml)
+[![Minified + gzipped size](https://img.shields.io/bundlejs/size/@aarongustafson/lazy-img?format=minzip&label=min%2Bgzip)](https://bundlejs.com/?q=@aarongustafson/lazy-img)
+[![License](https://img.shields.io/npm/l/@aarongustafson/lazy-img)](https://github.com/aarongustafson/lazy-img/blob/main/LICENSE)
+[![Type definitions](https://img.shields.io/npm/types/@aarongustafson/lazy-img)](https://github.com/aarongustafson/lazy-img/blob/main/lazy-img.d.ts)
 
 A lightweight, flexible web component for lazy-loading images based on viewport or container size. Perfect for responsive images that should only load when needed.
 
