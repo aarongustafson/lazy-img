@@ -497,6 +497,9 @@ remain available without JavaScript.
 The [demos](demo/index.html) pair reading surfaces with `CanvasText`/`Canvas`,
 inline code with `ButtonText`/`ButtonFace`, and code blocks with
 `FieldText`/`Field`. Supporting text inherits its surface’s foreground. The
+displayed component tags, CSS hooks, event API, and import/registration code use
+semantic `mark` elements with `MarkText`/`Mark`; generic surrounding code stays
+unmarked, and the copyable code text is unchanged. The
 Canvas-backed footer uses an 80% foreground mix, with full-strength text in
 forced colors, increased contrast, or browsers without `color-mix()`.
 Loading states have text and border-style cues, not just colored borders.
