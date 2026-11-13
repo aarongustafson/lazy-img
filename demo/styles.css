@@ -333,10 +333,25 @@ small {
 	}
 }
 
+@media (forced-colors: active) {
+	code {
+		background: ButtonFace;
+		color: ButtonText;
+	}
+	pre {
+		background: Field;
+		color: FieldText;
+	}
+}
+
 lazy-img,
 .demo img,
 input[type='range'] {
 	max-inline-size: 100%;
+}
+
+.demo img {
+	height: auto;
 }
 
 .demo-container {

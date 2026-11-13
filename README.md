@@ -500,12 +500,19 @@ inline code with `ButtonText`/`ButtonFace`, and code blocks with
 Canvas-backed footer uses an 80% foreground mix, with full-strength text in
 forced colors, increased contrast, or browsers without `color-mix()`.
 Loading states have text and border-style cues, not just colored borders.
-Width sliders preserve native keyboard behavior and focus.
+Width sliders preserve native keyboard behavior and focus. They follow the
+rounded content width after pointer resizing and update their bounds for the
+available space; arrow keys adjust the width by one pixel. In forced colors,
+code surfaces retain solid `ButtonFace` or `Field` backgrounds rather than
+depending on gradients that browsers suppress.
 
 The demos describe `loaded` and `lazy-img:loaded` as request-start signals:
 they don’t confirm a successful download. The failure example retains an
 authored description and recovery link. Demo messages are authored in the page
 and can be translated there; the component generates no status strings.
+The optional-image failure and essential native-image examples have separate
+code/live pairs, each showing all of its authored markup. The native image
+preserves its aspect ratio when constrained and works without JavaScript.
 
 Run `npm run test:run`, `npm run lint`, and `npm run test:browser`.
 Browser tests use one worker on port 4184 and cover Chromium, Firefox, and

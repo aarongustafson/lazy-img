@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { request as httpRequest } from 'node:http';
 import { test, expect } from '@playwright/test';
 
 const read = (path) =>
@@ -300,11 +301,15 @@ for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
 		).toBeVisible();
 		await expect(noJS.locator('lazy-img img')).toHaveCount(0);
 		if (name === 'index.html')
-			expect(
-				await noJS
-					.locator('figure img')
-					.evaluate((img) => img.complete && img.naturalWidth > 0),
-			).toBe(true);
+			await expect
+				.poll(() =>
+					noJS
+						.locator('figure img')
+						.evaluate(
+							(img) => img.complete && img.naturalWidth > 0,
+						),
+				)
+				.toBe(true);
 		await context.close();
 		await page.route('**/*.js*', (route) => route.abort());
 		await page.goto(`/demo/${name}`);
@@ -330,7 +335,7 @@ test('container loading is keyboard-operable and retains focus', async ({
 	);
 	await expect(image).not.toHaveAttribute('loaded');
 	await slider.focus();
-	for (let step = 0; step < 10; step++)
+	for (let step = 0; step < 100; step++)
 		await page.keyboard.press('ArrowRight');
 	await expect(image).toHaveAttribute('loaded');
 	await expect(slider).toBeFocused();
@@ -358,8 +363,16 @@ test('media queries request only after qualifying and retain the same image on r
 	await demo(page);
 	const image = page.locator('#media-query-example lazy-img');
 	await expect(image).not.toHaveAttribute('loaded');
+	await image.evaluate((element) =>
+		element.setAttribute('src', './sample.svg?decode-regression'),
+	);
+	await page.route('**/sample.svg?decode-regression', async (route) => {
+		await new Promise((resolve) => setTimeout(resolve, 300));
+		await route.continue();
+	});
 	await page.setViewportSize({ width: 1000, height: 800 });
 	await expect(image).toHaveAttribute('loaded');
+	await image.locator('img').evaluate((img) => img.decode());
 	expect(
 		await image
 			.locator('img')
@@ -373,6 +386,171 @@ test('media queries request only after qualifying and retain the same image on r
 	await expect(image.locator('img')).toHaveAttribute('data-retained', 'yes');
 });
 
+test('failure and native no-JavaScript examples each show their complete live markup', async ({
+	page,
+}) => {
+	await demo(page);
+	for (const id of ['failure-example', 'native-fallback-example']) {
+		const section = page.locator(`#${id}`);
+		await expect(section).toHaveCount(1);
+		const displayed = await section.locator('pre code').textContent();
+		const matches = await section
+			.locator('.demo')
+			.evaluate((live, displayed) => {
+				const template = document.createElement('template');
+				template.innerHTML = displayed;
+				const normalize = (root) => {
+					const walker = document.createTreeWalker(
+						root,
+						NodeFilter.SHOW_TEXT,
+					);
+					const nodes = [];
+					while (walker.nextNode()) nodes.push(walker.currentNode);
+					for (const node of nodes) {
+						node.textContent = node.textContent
+							.replace(/\s+/g, ' ')
+							.trim();
+						if (!node.textContent) node.remove();
+					}
+				};
+				const actual = live.cloneNode(true);
+				// Ignore attributes maintained by the component, not authored markup.
+				actual.querySelectorAll('lazy-img').forEach((image) => {
+					image.removeAttribute('loaded');
+					image.removeAttribute('qualifies');
+				});
+				normalize(template.content);
+				normalize(actual);
+				return actual.innerHTML === template.innerHTML;
+			}, displayed);
+		expect(matches, id).toBe(true);
+	}
+	await expect(
+		page.locator('#failure-example .demo > img, #failure-example figure'),
+	).toHaveCount(0);
+	await expect(
+		page.locator('#native-fallback-example .demo img'),
+	).toHaveCount(1);
+	await expect(page.locator('#native-fallback-example lazy-img')).toHaveCount(
+		0,
+	);
+});
+
+test('native fallback image keeps its intrinsic aspect ratio when constrained', async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 320, height: 800 });
+	await demo(page);
+	const image = page.locator('figure img');
+	await image.evaluate((img) => img.decode());
+	const box = await image.boundingBox();
+	expect(box.width / box.height).toBeCloseTo(2, 1);
+});
+
+test('pointer resizing synchronizes the slider before the next keyboard increment', async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await demo(page);
+	const container = page.locator('#container-1');
+	await container.scrollIntoViewIfNeeded();
+	const box = await container.boundingBox();
+	await page.mouse.move(box.x + box.width - 3, box.y + box.height - 3);
+	await page.mouse.down();
+	await page.mouse.move(box.x + box.width + 194, box.y + box.height - 3, {
+		steps: 10,
+	});
+	await page.mouse.up();
+	const tracker = page.locator('[data-container="container-1"]');
+	await expect
+		.poll(async () => Number(await tracker.textContent()))
+		.toBeGreaterThan(300);
+	const measured = Number(await tracker.textContent());
+	const slider = page.getByLabel('Width of container 1');
+	await expect(slider).toHaveValue(String(measured));
+	await slider.focus();
+	await page.keyboard.press('ArrowRight');
+	await expect(tracker).toHaveText(String(measured + 1));
+	await expect(slider).toHaveValue(String(measured + 1));
+	await expect(slider).toBeFocused();
+});
+
+test('range bounds and values follow constrained measured widths', async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 320, height: 800 });
+	await demo(page);
+	await page.addStyleTag({ content: ':root { font-size: 200%; }' });
+	const slider = page.getByLabel('Width of container 1');
+	const tracker = page.locator('[data-container="container-1"]');
+	await expect
+		.poll(async () => Number(await tracker.textContent()))
+		.toBeLessThan(200);
+	await expect(slider).toHaveValue(await tracker.textContent());
+	await expect(slider).toHaveAttribute('min', '0');
+	await expect(slider).toHaveAttribute('step', '1');
+	await slider.focus();
+	await page.keyboard.press('End');
+	await expect(slider).toHaveValue(await slider.getAttribute('max'));
+	await expect(tracker).toHaveText(await slider.inputValue());
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await expect
+		.poll(async () => Number(await slider.getAttribute('max')))
+		.toBeGreaterThan(200);
+});
+
+test('forced-color code pairs retain solid surfaces when gradients are suppressed', async ({
+	page,
+}) => {
+	await page.emulateMedia({ forcedColors: 'active' });
+	const css = substitute(await read('demo/styles.css'), [
+		'#ffffff',
+		'#000000',
+		'#000000',
+		'#ffff00',
+		'#000040',
+		'#ffffff',
+	]);
+	for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
+		await demo(page, name);
+		await page.addStyleTag({ content: css });
+		// Isolate authored pairs with distinct palette surfaces and no gradient painting.
+		await page.addStyleTag({
+			content:
+				'* { forced-color-adjust: none; background-image: none !important; }',
+		});
+		await expect(page.locator('h1 code')).toHaveCSS(
+			'background-color',
+			'rgb(0, 0, 0)',
+		);
+		await expect(page.locator('pre').first()).toHaveCSS(
+			'background-color',
+			'rgb(0, 0, 64)',
+		);
+		for (const selector of ['h1 code', 'pre'])
+			expect(
+				await contrast(page.locator(selector).first()),
+			).toBeGreaterThanOrEqual(4.5);
+	}
+});
+
+test('fixture rejects malformed request URLs and continues serving valid requests', async ({
+	request,
+}) => {
+	const status = await new Promise((resolve, reject) => {
+		const request = httpRequest(
+			{ hostname: '127.0.0.1', port: 4184, path: '//[' },
+			(response) => {
+				response.resume();
+				response.on('end', () => resolve(response.statusCode));
+			},
+		);
+		request.on('error', reject);
+		request.end();
+	});
+	expect(status).toBe(400);
+	expect((await request.get('/demo/index.html')).status()).toBe(200);
+});
 test('view loading uses text and border style cues without moving focus', async ({
 	page,
 }) => {
@@ -424,9 +602,11 @@ test('image failure keeps native alternative text, description, and recovery lin
 			exact: true,
 		}),
 	).toBeVisible();
-	expect(
-		await image.evaluate((img) => img.complete && img.naturalWidth === 0),
-	).toBe(true);
+	await expect
+		.poll(() =>
+			image.evaluate((img) => img.complete && img.naturalWidth === 0),
+		)
+		.toBe(true);
 	await expect(page.locator('#failure-example .demo')).toContainText(
 		'If the image is unavailable: mountain trail at sunrise.',
 	);

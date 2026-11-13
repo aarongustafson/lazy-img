@@ -168,9 +168,9 @@
 							<input
 								id="width-1"
 								type="range"
-								min="150"
+								min="0"
 								max="550"
-								step="10"
+								step="1"
 								value="200"
 								data-resize="container-1"
 							/>
@@ -222,9 +222,9 @@
 							<input
 								id="width-2"
 								type="range"
-								min="150"
+								min="0"
 								max="550"
-								step="10"
+								step="1"
 								value="350"
 								data-resize="container-2"
 							/>
@@ -483,9 +483,9 @@
 							<input
 								id="width-3"
 								type="range"
-								min="150"
+								min="0"
 								max="550"
-								step="10"
+								step="1"
 								value="300"
 								data-resize="container-3"
 							/>
@@ -631,9 +631,9 @@ document.getElementById('event-demo')
 							<input
 								id="width-4"
 								type="range"
-								min="150"
+								min="0"
 								max="550"
-								step="10"
+								step="1"
 								value="250"
 								data-resize="container-4"
 							/>
@@ -732,9 +732,9 @@ document.getElementById('event-demo')
 							<input
 								id="width-state"
 								type="range"
-								min="150"
+								min="0"
 								max="550"
-								step="10"
+								step="1"
 								value="300"
 								data-resize="state-demo-container"
 							/>
@@ -779,19 +779,18 @@ document.getElementById('event-demo')
 			</section>
 
 			<section class="demo-section" id="failure-example">
-				<h2>Failure and no-JavaScript fallback</h2>
+				<h2>Optional image download failure</h2>
 				<p>
-					Keep essential content in a native image. Optional images
-					can fail to download even after <code>loaded</code> is set.
-					This intentionally missing image keeps an authored
-					description and recovery link available.
+					Optional images can fail to download even after
+					<code>loaded</code> is set. This intentionally missing image
+					keeps an authored description and recovery link available.
 				</p>
 				<div class="code-demo-pair">
 					<pre><code>&lt;lazy-img src="./missing-image.jpg"
   alt="Mountain trail at sunrise"&gt;&lt;/lazy-img&gt;
 &lt;p&gt;If the image is unavailable:
   mountain trail at sunrise.
-  &lt;a href="./sample.svg"&gt;Open an alternative image&lt;/a&gt;
+  &lt;a href="./sample.svg"&gt;Open an alternative image&lt;/a&gt;.
 &lt;/p&gt;</code></pre>
 					<div class="demo">
 						<lazy-img
@@ -804,6 +803,28 @@ document.getElementById('event-demo')
 							<a href="./sample.svg">Open an alternative image</a
 							>.
 						</p>
+					</div>
+				</div>
+			</section>
+
+			<section class="demo-section" id="native-fallback-example">
+				<h2>Essential image without JavaScript</h2>
+				<p>
+					Use a native <code>img</code> for essential content rather
+					than relying on custom-element enhancement. This separate
+					example loads with or without JavaScript; its description
+					and recovery link remain available if the image fails.
+				</p>
+				<div class="code-demo-pair">
+					<pre><code>&lt;figure&gt;
+  &lt;img src="./sample.svg" width="800" height="400"
+    alt="A mountain trail at sunrise, shown as a simple illustration" /&gt;
+  &lt;figcaption&gt;This essential image works without JavaScript.&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;If the image is unavailable: mountain trail at sunrise.
+  &lt;a href="./sample.svg"&gt;Open an alternative image&lt;/a&gt;.
+&lt;/p&gt;</code></pre>
+					<div class="demo">
 						<figure>
 							<img
 								src="./sample.svg"
@@ -815,6 +836,12 @@ document.getElementById('event-demo')
 								This essential image works without JavaScript.
 							</figcaption>
 						</figure>
+						<p>
+							If the image is unavailable: mountain trail at
+							sunrise.
+							<a href="./sample.svg">Open an alternative image</a
+							>.
+						</p>
 					</div>
 				</div>
 			</section>
@@ -914,17 +941,49 @@ document.getElementById('event-demo')
 				const container = document.getElementById(containerId);
 
 				if (container) {
+					const slider = document.querySelector(
+						`[data-resize="${containerId}"]`,
+					);
 					const observer = new ResizeObserver((entries) => {
-						for (const entry of entries) {
-							const width = Math.round(
-								entry.contentBoxSize?.[0]?.inlineSize ||
-									entry.contentRect.width,
-							);
-							tracker.textContent = width;
-						}
+						const entry = entries.find(
+							(entry) => entry.target === container,
+						);
+						const style = getComputedStyle(container);
+						const parent = container.parentElement;
+						const parentStyle = getComputedStyle(parent);
+						const spacing = [
+							'paddingLeft',
+							'paddingRight',
+							'borderLeftWidth',
+							'borderRightWidth',
+						].reduce(
+							(total, property) =>
+								total + parseFloat(style[property]),
+							0,
+						);
+						const width = Math.round(
+							entry?.contentBoxSize?.[0]?.inlineSize ??
+								entry?.contentRect.width ??
+								container.getBoundingClientRect().width -
+									spacing,
+						);
+						// Match the demo's content-box CSS cap, including padding and borders.
+						const available = Math.max(
+							0,
+							Math.floor(
+								parent.clientWidth -
+									parseFloat(parentStyle.paddingLeft) -
+									parseFloat(parentStyle.paddingRight) -
+									spacing,
+							),
+						);
+						tracker.textContent = width;
+						slider.max = Math.max(width, available);
+						slider.value = width;
 					});
 
 					observer.observe(container);
+					observer.observe(container.parentElement);
 					resizeObservers.set(containerId, observer);
 				}
 			});
