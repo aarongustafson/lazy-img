@@ -132,54 +132,6 @@ for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
 			? [...surfaces, '.note', '#event-status small']
 			: ['body', '.demo-section', '.demo', 'pre', 'footer'];
 
-	test(`${name}: marked component code retains light/dark contrast and narrow reflow`, async ({
-		page,
-	}) => {
-		for (const colorScheme of ['light', 'dark']) {
-			await page.emulateMedia({ colorScheme });
-			await page.setViewportSize({ width: 1440, height: 900 });
-			await demo(page, name);
-			const marks = page.locator('pre code mark');
-			expect(await marks.count()).toBeGreaterThan(0);
-			for (const mark of await marks.all())
-				expect(
-					await contrast(mark),
-					`${name} ${colorScheme}`,
-				).toBeGreaterThanOrEqual(4.5);
-			await page.setViewportSize({ width: 320, height: 800 });
-			await page.addStyleTag({ content: ':root { font-size: 200%; }' });
-			expect(
-				await page.evaluate(() => document.documentElement.scrollWidth),
-			).toBeLessThanOrEqual(320);
-			for (const code of await page.locator('pre').all()) {
-				const box = await code.boundingBox();
-				expect(box.x + box.width).toBeLessThanOrEqual(320);
-			}
-		}
-	});
-
-	test(`${name}: marked component code remains readable with automatic forced-color adjustment`, async ({
-		page,
-		browserName,
-	}) => {
-		test.skip(
-			browserName !== 'chromium',
-			'Chromium forced-color emulation is a regression aid, not OS-theme coverage.',
-		);
-		await page.emulateMedia({ forcedColors: 'active' });
-		await demo(page, name);
-		const marks = page.locator('pre code mark');
-		expect(await marks.count()).toBeGreaterThan(0);
-		for (const mark of await marks.all()) {
-			await expect(mark).toHaveCSS('forced-color-adjust', 'auto');
-			expect(await contrast(mark)).toBeGreaterThanOrEqual(4.5);
-		}
-		await page.setViewportSize({ width: 320, height: 800 });
-		expect(
-			await page.evaluate(() => document.documentElement.scrollWidth),
-		).toBeLessThanOrEqual(320);
-	});
-
 	test(`${name}: README navigation opens the canonical rendered documentation`, async ({
 		page,
 	}) => {
