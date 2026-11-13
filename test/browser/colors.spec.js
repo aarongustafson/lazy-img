@@ -131,6 +131,19 @@ for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
 			? [...surfaces, '.note', '#event-status small']
 			: ['body', '.demo-section', '.demo', 'pre', 'footer'];
 
+	test(`${name}: README navigation opens the canonical rendered documentation`, async ({
+		page,
+	}) => {
+		await demo(page, name);
+		const links = page.getByRole('link', { name: 'README', exact: true });
+		expect(await links.count()).toBeGreaterThan(0);
+		for (const link of await links.all())
+			await expect(link).toHaveAttribute(
+				'href',
+				'https://github.com/aarongustafson/lazy-img/blob/main/README.md',
+			);
+	});
+
 	test(`${name}: actual successful image sources are local and decode without image interception`, async ({
 		page,
 	}) => {
