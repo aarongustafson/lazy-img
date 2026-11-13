@@ -530,6 +530,10 @@ Contrast themes, Firefox custom forced-color preferences, Android/iOS browsers,
 macOS Increase Contrast/accent changes, physical zoom, and assistive-technology
 acceptance still need manual checks. Ubuntu WebKit’s known dark
 `ButtonText`/`ButtonFace` limitation is tracked separately from reading surfaces.
+The native-grip drag check is skipped in bundled Linux WebKit after two grip
+hit points left the width unchanged in CI. Measured fractional resizing,
+keyboard transitions, and constrained range bounds remain tested in that engine;
+native dragging still needs a manual check there.
 
 ## Browser Support
 
