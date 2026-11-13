@@ -29,13 +29,19 @@
 				</p>
 
 				<div class="code-demo-pair">
-					<pre><code>import { LazyImgElement } from
+					<pre><code>&lt;script type="module"&gt;
+import { LazyImgElement } from
   'https://esm.sh/@aarongustafson/lazy-img@2.1.1/lazy-img.js?bundle&amp;target=es2022';
-customElements.define('lazy-img', LazyImgElement);</code></pre>
+customElements.define('lazy-img', LazyImgElement);
+&lt;/script&gt;
+
+&lt;lazy-img src="./sample.svg"
+  alt="Mountain trail at sunrise illustration"&gt;
+&lt;/lazy-img&gt;</code></pre>
 					<div class="demo">
 						<lazy-img
-							src="https://picsum.photos/seed/esmsh/800/400"
-							alt="Sample image from Picsum"
+							src="./sample.svg"
+							alt="Mountain trail at sunrise illustration"
 						></lazy-img>
 						<p>
 							If the optional image is unavailable,

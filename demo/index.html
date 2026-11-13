@@ -116,13 +116,13 @@
 					<h3>Basic Usage</h3>
 					<div class="code-demo-pair">
 						<pre><code>&lt;lazy-img
-  src="https://picsum.photos/800/400"
-  alt="Placeholder image"&gt;
+  src="./sample.svg"
+  alt="Mountain trail at sunrise illustration"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
 							<lazy-img
-								src="https://picsum.photos/800/400"
-								alt="Placeholder image"
+								src="./sample.svg"
+								alt="Mountain trail at sunrise illustration"
 							>
 							</lazy-img>
 						</div>
@@ -156,8 +156,8 @@
 					</p>
 					<div class="code-demo-pair">
 						<pre><code>&lt;lazy-img
-  src="https://picsum.photos/600/300?random=1"
-  alt="Landscape photo"
+  src="./sample.svg"
+  alt="Mountain trail at sunrise illustration"
   min-inline-size="300"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
@@ -192,8 +192,8 @@
 									/ Min: 300px
 								</div>
 								<lazy-img
-									src="https://picsum.photos/600/300?random=1"
-									alt="Landscape photo"
+									src="./sample.svg"
+									alt="Mountain trail at sunrise illustration"
 									min-inline-size="300"
 								>
 								</lazy-img>
@@ -210,8 +210,8 @@
 					</p>
 					<div class="code-demo-pair">
 						<pre><code>&lt;lazy-img
-  src="https://picsum.photos/800/400?random=2"
-  alt="Nature photo"
+  src="./sample.svg"
+  alt="Mountain trail at sunrise illustration"
   min-inline-size="500"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
@@ -246,8 +246,8 @@
 									/ Min: 500px
 								</div>
 								<lazy-img
-									src="https://picsum.photos/800/400?random=2"
-									alt="Nature photo"
+									src="./sample.svg"
+									alt="Mountain trail at sunrise illustration"
 									min-inline-size="500"
 								>
 								</lazy-img>
@@ -277,15 +277,15 @@
 					<h3>Viewport Width Check (min-inline-size: 768px)</h3>
 					<div class="code-demo-pair">
 						<pre><code>&lt;lazy-img
-  src="https://picsum.photos/1000/500?random=3"
-  alt="Wide landscape photo"
+  src="./sample.svg"
+  alt="Mountain trail at sunrise illustration"
   min-inline-size="768"
   query="media"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
 							<lazy-img
-								src="https://picsum.photos/1000/500?random=3"
-								alt="Wide landscape photo"
+								src="./sample.svg"
+								alt="Mountain trail at sunrise illustration"
 								min-inline-size="768"
 								query="media"
 							>
@@ -325,8 +325,8 @@
 					</p>
 					<div class="code-demo-pair">
 						<pre><code>&lt;lazy-img
-  src="https://picsum.photos/800/400?random=8"
-  alt="Scroll-based photo"
+  src="./sample.svg"
+  alt="Mountain trail at sunrise illustration"
   query="view"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
@@ -345,8 +345,8 @@
 							</div>
 							<lazy-img
 								id="view-demo-1"
-								src="https://picsum.photos/800/400?random=8"
-								alt="Scroll-based photo"
+								src="./sample.svg"
+								alt="Mountain trail at sunrise illustration"
 								query="view"
 							>
 							</lazy-img>
@@ -365,8 +365,8 @@
 					<p>Loads when 50% of the image is visible.</p>
 					<div class="code-demo-pair">
 						<pre><code>&lt;lazy-img
-  src="https://picsum.photos/800/400?random=9"
-  alt="Half-visible trigger"
+  src="./sample.svg"
+  alt="Mountain trail at sunrise illustration"
   query="view"
   view-range-start="entry 50%"&gt;
 &lt;/lazy-img&gt;</code></pre>
@@ -386,8 +386,8 @@
 							</div>
 							<lazy-img
 								id="view-demo-2"
-								src="https://picsum.photos/800/400?random=9"
-								alt="Half-visible trigger"
+								src="./sample.svg"
+								alt="Mountain trail at sunrise illustration"
 								query="view"
 								view-range-start="entry 50%"
 							>
@@ -410,8 +410,8 @@
 					</p>
 					<div class="code-demo-pair">
 						<pre><code>&lt;lazy-img
-  src="https://picsum.photos/800/400?random=10"
-  alt="Preloaded photo"
+  src="./sample.svg"
+  alt="Mountain trail at sunrise illustration"
   query="view"
   view-range-start="entry -200px"&gt;
 &lt;/lazy-img&gt;</code></pre>
@@ -429,8 +429,8 @@
 							</div>
 							<lazy-img
 								id="view-demo-3"
-								src="https://picsum.photos/800/400?random=10"
-								alt="Preloaded photo"
+								src="./sample.svg"
+								alt="Mountain trail at sunrise illustration"
 								query="view"
 								view-range-start="entry -200px"
 							>
@@ -463,14 +463,14 @@
 					</p>
 					<div class="code-demo-pair">
 						<pre><code>&lt;lazy-img
-  src="https://picsum.photos/800/400?random=4"
-  srcset="https://picsum.photos/400/200?random=4 400w,
-          https://picsum.photos/800/400?random=4 800w,
-          https://picsum.photos/1200/600?random=4 1200w"
+  src="./sample.svg"
+  srcset="./sample-small.svg 400w,
+          ./sample.svg 800w,
+          ./sample-large.svg 1200w"
   sizes="(max-width: 600px) 400px,
          (max-width: 1000px) 800px,
          1200px"
-  alt="Responsive photo"
+  alt="Mountain trail at sunrise illustration"
   min-inline-size="400"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
@@ -507,12 +507,12 @@
 									/ Min: 400px
 								</div>
 								<lazy-img
-									src="https://picsum.photos/800/400?random=4"
-									srcset="https://picsum.photos/400/200?random=4 400w,
-									        https://picsum.photos/800/400?random=4 800w,
-									        https://picsum.photos/1200/600?random=4 1200w"
+									src="./sample.svg"
+									srcset="./sample-small.svg 400w,
+									        ./sample.svg 800w,
+									        ./sample-large.svg 1200w"
 									sizes="(max-width: 600px) 400px, (max-width: 1000px) 800px, 1200px"
-									alt="Responsive photo"
+									alt="Mountain trail at sunrise illustration"
 									min-inline-size="400"
 								>
 								</lazy-img>
@@ -557,8 +557,8 @@
 &lt;/style&gt;
 
 &lt;lazy-img
-  src="https://picsum.photos/1000/500?random=5"
-  alt="Scenic photo"
+  src="./sample.svg"
+  alt="Mountain trail at sunrise illustration"
   named-breakpoints="medium, large"
   query="media"&gt;
 &lt;/lazy-img&gt;</code></pre>
@@ -580,8 +580,8 @@
 								>
 							</p>
 							<lazy-img
-								src="https://picsum.photos/1000/500?random=5"
-								alt="Scenic photo"
+								src="./sample.svg"
+								alt="Mountain trail at sunrise illustration"
 								named-breakpoints="medium, large"
 								query="media"
 							>
@@ -610,8 +610,8 @@
 					<div class="code-demo-pair">
 						<pre><code>&lt;lazy-img
   id="event-demo"
-  src="https://picsum.photos/600/300?random=6"
-  alt="Event demo photo"
+  src="./sample.svg"
+  alt="Mountain trail at sunrise illustration"
   min-inline-size="350"&gt;
 &lt;/lazy-img&gt;
 
@@ -656,8 +656,8 @@ document.getElementById('event-demo')
 								</div>
 								<lazy-img
 									id="event-demo"
-									src="https://picsum.photos/600/300?random=6"
-									alt="Event demo photo"
+									src="./sample.svg"
+									alt="Mountain trail at sunrise illustration"
 									min-inline-size="350"
 								>
 								</lazy-img>
@@ -718,8 +718,8 @@ document.getElementById('event-demo')
 &lt;/style&gt;
 
 &lt;lazy-img
-  src="https://picsum.photos/600/300"
-  alt="State demo"
+  src="./sample.svg"
+  alt="Mountain trail at sunrise illustration"
   min-inline-size="400"&gt;
 &lt;/lazy-img&gt;</code></pre>
 						<div class="demo">
@@ -757,8 +757,8 @@ document.getElementById('event-demo')
 								</div>
 								<lazy-img
 									id="state-demo-img"
-									src="https://picsum.photos/600/300?random=7"
-									alt="State attributes demo"
+									src="./sample.svg"
+									alt="Mountain trail at sunrise illustration"
 									min-inline-size="400"
 								>
 								</lazy-img>

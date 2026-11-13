@@ -511,8 +511,11 @@ Run `npm run test:run`, `npm run lint`, and `npm run test:browser`.
 Browser tests use one worker on port 4184 and cover Chromium, Firefox, and
 WebKit, including 19 distinct study palettes representing 62 observations,
 light/dark rendering, native focus, narrow layouts, enlarged text, image
-failure, and no-JavaScript behavior. CDN tests substitute local module and image
-responses, so they don’t establish live CDN availability.
+failure, and no-JavaScript behavior. Every successful demo image uses a local
+authored SVG; browser checks decode the actual image sources without intercepting
+image requests. The responsive example includes 400px, 800px, and 1200px sources.
+CDN tests substitute local module responses, so they don’t establish live CDN
+availability. The intentional missing-image example remains a failure case.
 
 Palette substitution and Chromium forced-color emulation are regression aids,
 not evidence of OS repainting or accessibility conformance. Real Windows

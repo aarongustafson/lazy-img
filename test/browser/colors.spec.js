@@ -5,13 +5,7 @@ const read = (path) =>
 	readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 const source = await read('lazy-img.js');
 const definition = await read('define.js');
-const image =
-	'<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400"><rect width="800" height="400" fill="#ddd"/></svg>';
-
-async function demo(page, name = 'index.html') {
-	await page.route('https://picsum.photos/**', (route) =>
-		route.fulfill({ contentType: 'image/svg+xml', body: image }),
-	);
+async function modules(page) {
 	await page.route('https://esm.sh/**', (route) =>
 		route.fulfill({ contentType: 'text/javascript', body: source }),
 	);
@@ -24,6 +18,10 @@ async function demo(page, name = 'index.html') {
 			),
 		}),
 	);
+}
+
+async function demo(page, name = 'index.html') {
+	await modules(page);
 	await page.goto(`/demo/${name}`);
 	await expect(page.locator('lazy-img img').first()).toBeVisible();
 }
@@ -132,6 +130,72 @@ for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
 		name === 'index.html'
 			? [...surfaces, '.note', '#event-status small']
 			: ['body', '.demo-section', '.demo', 'pre', 'footer'];
+
+	test(`${name}: actual successful image sources are local and decode without image interception`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await modules(page);
+		await page.goto(`/demo/${name}`, { waitUntil: 'domcontentloaded' });
+		await expect
+			.poll(() =>
+				page.evaluate(() => Boolean(customElements.get('lazy-img'))),
+			)
+			.toBe(true);
+		const successful = page.locator(
+			'lazy-img:not([src="./missing-image.jpg"])',
+		);
+		const sources = await successful.evaluateAll((elements) =>
+			elements.flatMap((element) => [
+				element.getAttribute('src'),
+				...(element.getAttribute('srcset') || '')
+					.split(',')
+					.filter(Boolean)
+					.map((candidate) => candidate.trim().split(/\s+/)[0]),
+			]),
+		);
+		for (const source of new Set(sources)) {
+			expect(new URL(source, page.url()).origin, source).toBe(
+				new URL(page.url()).origin,
+			);
+			const response = await page.request.get(
+				new URL(source, page.url()).href,
+			);
+			expect(response.status(), source).toBe(200);
+			expect(
+				await page.evaluate(async (source) => {
+					const image = new Image();
+					image.src = source;
+					await image.decode();
+					return image.complete && image.naturalWidth > 0;
+				}, source),
+				source,
+			).toBe(true);
+		}
+		expect(
+			(await page.locator('pre').allTextContents()).join('\n'),
+		).not.toContain('picsum.photos');
+		for (const slider of await page.locator('[data-resize]').all()) {
+			await slider.focus();
+			await page.keyboard.press('End');
+		}
+		for (const element of await successful.all()) {
+			await element.scrollIntoViewIfNeeded();
+			const image = element.locator('img');
+			await expect(image).toHaveCount(1);
+			await expect
+				.poll(() =>
+					image.evaluate(
+						(img) => img.complete && img.naturalWidth > 0,
+					),
+				)
+				.toBe(true);
+			await image.evaluate((img) => img.decode());
+			expect(
+				await image.evaluate((img) => new URL(img.currentSrc).origin),
+			).toBe(new URL(page.url()).origin);
+		}
+	});
 
 	test(`${name}: all study palettes retain reading, supporting, and code contrast`, async ({
 		page,
