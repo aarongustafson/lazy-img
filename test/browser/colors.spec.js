@@ -455,9 +455,9 @@ test('pointer resizing synchronizes the slider before the next keyboard incremen
 	const container = page.locator('#container-1');
 	await container.scrollIntoViewIfNeeded();
 	const box = await container.boundingBox();
-	await page.mouse.move(box.x + box.width - 3, box.y + box.height - 3);
+	await page.mouse.move(box.x + box.width - 8, box.y + box.height - 8);
 	await page.mouse.down();
-	await page.mouse.move(box.x + box.width + 194, box.y + box.height - 3, {
+	await page.mouse.move(box.x + box.width + 189, box.y + box.height - 8, {
 		steps: 10,
 	});
 	await page.mouse.up();
