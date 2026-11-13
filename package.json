@@ -1,6 +1,6 @@
 {
 	"name": "@aarongustafson/lazy-img",
-	"version": "2.1.1",
+	"version": "2.1.2",
 	"description": "Web component that enables you to lazy load an image based on screen size",
 	"keywords": [
 		"html",
