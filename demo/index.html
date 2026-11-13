@@ -118,10 +118,10 @@
 				<div class="demo-section">
 					<h3>Basic Usage</h3>
 					<div class="code-demo-pair">
-						<pre><code>&lt;lazy-img
+						<pre><code><mark>&lt;lazy-img
   src="./sample.svg"
-  alt="Mountain trail at sunrise illustration"&gt;
-&lt;/lazy-img&gt;</code></pre>
+  alt="Mountain trail at sunrise illustration"&gt;</mark>
+<mark>&lt;/lazy-img&gt;</mark></code></pre>
 						<div class="demo">
 							<lazy-img
 								src="./sample.svg"
@@ -158,11 +158,11 @@
 						image won't load until you resize it.
 					</p>
 					<div class="code-demo-pair">
-						<pre><code>&lt;lazy-img
+						<pre><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
-  min-inline-size="300"&gt;
-&lt;/lazy-img&gt;</code></pre>
+  min-inline-size="300"&gt;</mark>
+<mark>&lt;/lazy-img&gt;</mark></code></pre>
 						<div class="demo">
 							<label for="width-1">Width of container 1</label>
 							<input
@@ -212,11 +212,11 @@
 						trigger the image load.
 					</p>
 					<div class="code-demo-pair">
-						<pre><code>&lt;lazy-img
+						<pre><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
-  min-inline-size="500"&gt;
-&lt;/lazy-img&gt;</code></pre>
+  min-inline-size="500"&gt;</mark>
+<mark>&lt;/lazy-img&gt;</mark></code></pre>
 						<div class="demo">
 							<label for="width-2">Width of container 2</label>
 							<input
@@ -279,12 +279,12 @@
 				<div class="demo-section">
 					<h3>Viewport Width Check (min-inline-size: 768px)</h3>
 					<div class="code-demo-pair">
-						<pre><code>&lt;lazy-img
+						<pre><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
   min-inline-size="768"
-  query="media"&gt;
-&lt;/lazy-img&gt;</code></pre>
+  query="media"&gt;</mark>
+<mark>&lt;/lazy-img&gt;</mark></code></pre>
 						<div class="demo">
 							<lazy-img
 								src="./sample.svg"
@@ -327,11 +327,11 @@
 						viewport.
 					</p>
 					<div class="code-demo-pair">
-						<pre><code>&lt;lazy-img
+						<pre><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
-  query="view"&gt;
-&lt;/lazy-img&gt;</code></pre>
+  query="view"&gt;</mark>
+<mark>&lt;/lazy-img&gt;</mark></code></pre>
 						<div class="demo">
 							<div
 								style="
@@ -367,12 +367,12 @@
 					<h3>Threshold-Based (entry 50%)</h3>
 					<p>Loads when 50% of the image is visible.</p>
 					<div class="code-demo-pair">
-						<pre><code>&lt;lazy-img
+						<pre><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
   query="view"
-  view-range-start="entry 50%"&gt;
-&lt;/lazy-img&gt;</code></pre>
+  view-range-start="entry 50%"&gt;</mark>
+<mark>&lt;/lazy-img&gt;</mark></code></pre>
 						<div class="demo">
 							<div
 								style="
@@ -412,12 +412,12 @@
 						viewport (smooth UX).
 					</p>
 					<div class="code-demo-pair">
-						<pre><code>&lt;lazy-img
+						<pre><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
   query="view"
-  view-range-start="entry -200px"&gt;
-&lt;/lazy-img&gt;</code></pre>
+  view-range-start="entry -200px"&gt;</mark>
+<mark>&lt;/lazy-img&gt;</mark></code></pre>
 						<div class="demo">
 							<div
 								style="
@@ -465,7 +465,7 @@
 						chooses the appropriate size from srcset.
 					</p>
 					<div class="code-demo-pair">
-						<pre><code>&lt;lazy-img
+						<pre><code><mark>&lt;lazy-img
   src="./sample.svg"
   srcset="./sample-small.svg 400w,
           ./sample.svg 800w,
@@ -474,8 +474,8 @@
          (max-width: 1000px) 800px,
          1200px"
   alt="Mountain trail at sunrise illustration"
-  min-inline-size="400"&gt;
-&lt;/lazy-img&gt;</code></pre>
+  min-inline-size="400"&gt;</mark>
+<mark>&lt;/lazy-img&gt;</mark></code></pre>
 						<div class="demo">
 							<label for="width-3"
 								>Width of responsive-image container</label
@@ -545,26 +545,26 @@
 					<div class="code-demo-pair">
 						<pre><code>&lt;style&gt;
   :root {
-    --lazy-img-mq: small;
+    <mark>--lazy-img-mq: small;</mark>
   }
   @media (min-width: 768px) {
     :root {
-      --lazy-img-mq: medium;
+      <mark>--lazy-img-mq: medium;</mark>
     }
   }
   @media (min-width: 1024px) {
     :root {
-      --lazy-img-mq: large;
+      <mark>--lazy-img-mq: large;</mark>
     }
   }
 &lt;/style&gt;
 
-&lt;lazy-img
+<mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
   named-breakpoints="medium, large"
-  query="media"&gt;
-&lt;/lazy-img&gt;</code></pre>
+  query="media"&gt;</mark>
+<mark>&lt;/lazy-img&gt;</mark></code></pre>
 						<div class="demo">
 							<p>
 								<small
@@ -611,17 +611,17 @@
 						trigger the load event.
 					</p>
 					<div class="code-demo-pair">
-						<pre><code>&lt;lazy-img
+						<pre><code><mark>&lt;lazy-img
   id="event-demo"
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
-  min-inline-size="350"&gt;
-&lt;/lazy-img&gt;
+  min-inline-size="350"&gt;</mark>
+<mark>&lt;/lazy-img&gt;</mark>
 
 &lt;script&gt;
 document.getElementById('event-demo')
-  .addEventListener('lazy-img:loaded', (e) => {
-    console.log('Image loaded:', e.detail.src);
+  <mark>.addEventListener('lazy-img:loaded', (e) => {</mark>
+    console.log('Image loaded:', <mark>e.detail.src</mark>);
   });
 &lt;/script&gt;</code></pre>
 						<div class="demo">
@@ -714,17 +714,17 @@ document.getElementById('event-demo')
 					<div class="code-demo-pair">
 						<pre><code>&lt;style&gt;
   /* Hide loaded images that don't qualify */
-  lazy-img[loaded]:not([qualifies]) {
+  <mark>lazy-img[loaded]:not([qualifies])</mark> {
     display: none;
   }
 
 &lt;/style&gt;
 
-&lt;lazy-img
+<mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
-  min-inline-size="400"&gt;
-&lt;/lazy-img&gt;</code></pre>
+  min-inline-size="400"&gt;</mark>
+<mark>&lt;/lazy-img&gt;</mark></code></pre>
 						<div class="demo">
 							<label for="width-state"
 								>Width of state container</label
@@ -786,8 +786,8 @@ document.getElementById('event-demo')
 					keeps an authored description and recovery link available.
 				</p>
 				<div class="code-demo-pair">
-					<pre><code>&lt;lazy-img src="./missing-image.jpg"
-  alt="Mountain trail at sunrise"&gt;&lt;/lazy-img&gt;
+					<pre><code><mark>&lt;lazy-img src="./missing-image.jpg"
+  alt="Mountain trail at sunrise"&gt;&lt;/lazy-img&gt;</mark>
 &lt;p&gt;If the image is unavailable:
   mountain trail at sunrise.
   &lt;a href="./sample.svg"&gt;Open an alternative image&lt;/a&gt;.
