@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 const read = (path) => readFile(resolve(process.cwd(), path), 'utf8');
 const { version } = JSON.parse(await read('package.json'));
@@ -40,6 +40,56 @@ const componentCode = [
 	/defineLazyImg\(\);/g,
 ];
 
+function snippetsFrom(html) {
+	const template = document.createElement('template');
+	template.innerHTML = html;
+	return [...template.content.querySelectorAll('pre code')];
+}
+
+function textHashes(snippets, releaseVersion = version) {
+	return snippets.map((code) => {
+		// Normalize only the release-managed package URL version.
+		const text = code.textContent.replaceAll(
+			`@aarongustafson/lazy-img@${releaseVersion}/`,
+			'@aarongustafson/lazy-img@VERSION/',
+		);
+		return createHash('sha256').update(text).digest('hex');
+	});
+}
+
+function expectHighlights(snippets) {
+	let covered = 0;
+	for (const code of snippets) {
+		expect(code.querySelector('mark mark')).toBeNull();
+		const actual = Array(code.textContent.length).fill(false);
+		const expected = Array(code.textContent.length).fill(false);
+		const walker = document.createTreeWalker(code, NodeFilter.SHOW_TEXT);
+		let offset = 0;
+		while (walker.nextNode()) {
+			const node = walker.currentNode;
+			if (node.parentElement.closest('mark'))
+				actual.fill(true, offset, offset + node.textContent.length);
+			offset += node.textContent.length;
+		}
+		for (const pattern of componentCode) {
+			for (const match of code.textContent.matchAll(pattern)) {
+				const end = match.index + match[0].length;
+				expected.fill(true, match.index, end);
+				expect(
+					actual.slice(match.index, end).every(Boolean),
+					match[0],
+				).toBe(true);
+				covered++;
+			}
+		}
+		expect(
+			actual.every((marked, index) => !marked || expected[index]),
+			'generic surrounding code stays unmarked',
+		).toBe(true);
+	}
+	expect(covered).toBeGreaterThan(0);
+}
+
 it('covers every authored HTML demo page', async () => {
 	const pages = (await readdir(resolve(process.cwd(), 'demo')))
 		.filter((name) => name.endsWith('.html'))
@@ -47,63 +97,77 @@ it('covers every authored HTML demo page', async () => {
 	expect(pages).toEqual(Object.keys(baselines).sort());
 });
 
-for (const [name, hashes] of Object.entries(baselines)) {
-	const template = document.createElement('template');
-	template.innerHTML = await read(`demo/${name}`);
-	const snippets = [...template.content.querySelectorAll('pre code')];
+it('retained publishing helper preserves highlighting contracts after a future version update', async () => {
+	const originalPackage = await read('package.json');
+	const originals = Object.fromEntries(
+		await Promise.all(
+			Object.keys(baselines).map(async (name) => [
+				name,
+				await read(`demo/${name}`),
+			]),
+		),
+	);
+	const futureVersion = '99.0.0';
+	const writes = [];
+	vi.doMock('fs', () => ({
+		readFileSync(path) {
+			if (path.endsWith('package.json'))
+				return JSON.stringify({
+					...JSON.parse(originalPackage),
+					version: futureVersion,
+				});
+			if (path.endsWith('/demo/esm.html')) return originals['esm.html'];
+			throw new Error(`Unexpected fixture read: ${path}`);
+		},
+		writeFileSync(path, content) {
+			expect(path.endsWith('/demo/esm.html')).toBe(true);
+			writes.push(content);
+		},
+	}));
+	const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+	try {
+		await import('../scripts/update-demo-versions.js');
+		expect(writes).toHaveLength(1);
+		expect(writes[0]).toBe(
+			originals['esm.html'].replaceAll(
+				`@aarongustafson/lazy-img@${version}/`,
+				`@aarongustafson/lazy-img@${futureVersion}/`,
+			),
+		);
+		for (const [name, hashes] of Object.entries(baselines)) {
+			const snippets = snippetsFrom(
+				name === 'esm.html' ? writes[0] : originals[name],
+			);
+			expectHighlights(snippets);
+			expect(textHashes(snippets, futureVersion)).toEqual(hashes);
+		}
+		const changedGenericCode = snippetsFrom(
+			writes[0].replace(
+				'&lt;script type="module"&gt;',
+				'&lt;script type="text/plain"&gt;',
+			),
+		);
+		expect(textHashes(changedGenericCode, futureVersion)).not.toEqual(
+			baselines['esm.html'],
+		);
+		expect(await read('package.json')).toBe(originalPackage);
+		for (const [name, original] of Object.entries(originals))
+			expect(await read(`demo/${name}`)).toBe(original);
+	} finally {
+		vi.doUnmock('fs');
+		log.mockRestore();
+	}
+});
 
+for (const [name, hashes] of Object.entries(baselines)) {
+	const snippets = snippetsFrom(await read(`demo/${name}`));
 	describe(name, () => {
 		it('marks every component-specific span without marking generic code or nesting marks', () => {
-			let covered = 0;
-			for (const code of snippets) {
-				expect(code.querySelector('mark mark')).toBeNull();
-				const actual = Array(code.textContent.length).fill(false);
-				const expected = Array(code.textContent.length).fill(false);
-				const walker = document.createTreeWalker(
-					code,
-					NodeFilter.SHOW_TEXT,
-				);
-				let offset = 0;
-				while (walker.nextNode()) {
-					const node = walker.currentNode;
-					if (node.parentElement.closest('mark'))
-						actual.fill(
-							true,
-							offset,
-							offset + node.textContent.length,
-						);
-					offset += node.textContent.length;
-				}
-				for (const pattern of componentCode) {
-					for (const match of code.textContent.matchAll(pattern)) {
-						const end = match.index + match[0].length;
-						expected.fill(true, match.index, end);
-						expect(
-							actual.slice(match.index, end).every(Boolean),
-							match[0],
-						).toBe(true);
-						covered++;
-					}
-				}
-				expect(
-					actual.every((marked, index) => !marked || expected[index]),
-					'generic surrounding code stays unmarked',
-				).toBe(true);
-			}
-			expect(covered).toBeGreaterThan(0);
+			expectHighlights(snippets);
 		});
 
 		it('preserves every displayed code character from the unmarked baseline', () => {
-			expect(
-				snippets.map((code) => {
-					// Keep the retained version helper usable without changing this baseline.
-					const text = code.textContent.replaceAll(
-						`@aarongustafson/lazy-img@${version}/`,
-						'@aarongustafson/lazy-img@VERSION/',
-					);
-					return createHash('sha256').update(text).digest('hex');
-				}),
-			).toEqual(hashes);
+			expect(textHashes(snippets)).toEqual(hashes);
 		});
 	});
 }
