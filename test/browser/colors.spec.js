@@ -297,6 +297,10 @@ for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
 		page,
 	}) => {
 		const context = await browser.newContext({ javaScriptEnabled: false });
+		await context.route(
+			'https://cdn.jsdelivr.net/npm/microlighter@2.2.0/dist/**',
+			(route) => route.abort(),
+		);
 		const noJS = await context.newPage();
 		await noJS.goto(`http://127.0.0.1:4184/demo/${name}`);
 		await expect(noJS.locator('noscript').first()).toBeVisible();
