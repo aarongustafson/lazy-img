@@ -575,7 +575,7 @@ test('forced-color code pairs retain solid surfaces when gradients are suppresse
 		);
 		await expect(page.locator('pre').first()).toHaveCSS(
 			'background-color',
-			'rgb(255, 255, 255)',
+			'rgb(0, 0, 64)',
 		);
 		for (const selector of ['h1', 'pre'])
 			expect(
