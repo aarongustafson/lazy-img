@@ -2,6 +2,13 @@ import { readFile } from 'node:fs/promises';
 import { request as httpRequest } from 'node:http';
 import { test, expect } from '@playwright/test';
 
+test.beforeEach(async ({ page }) => {
+	await page.route(
+		'https://cdn.jsdelivr.net/npm/microlighter@2.2.0/dist/**',
+		(route) => route.abort(),
+	);
+});
+
 const read = (path) =>
 	readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 const source = await read('lazy-img.js');
@@ -215,7 +222,13 @@ for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
 		page,
 	}) => {
 		await demo(page, name);
-		const css = await read('demo/styles.css');
+		const css = [
+			await read('demo/styles.css'),
+			await read('demo/demo-shell.css'),
+		].join('\n');
+		await page
+			.locator('link[rel="stylesheet"]')
+			.evaluateAll((links) => links.forEach((link) => link.remove()));
 		await page.addStyleTag({ content: css });
 		const sheets = [];
 		for (const locator of await page.locator('style').all())
@@ -228,7 +241,7 @@ for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
 					},
 					substitute(sheet.css, palette),
 				);
-			for (const selector of [...selectors, 'h1 code'])
+			for (const selector of [...selectors, 'h1'])
 				expect(
 					await contrast(page.locator(selector).first()),
 					`${palette[0]} ${selector}`,
@@ -249,21 +262,14 @@ for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
 				).toBeGreaterThanOrEqual(4.5);
 		});
 
-		test(`${name}: ${colorScheme} native inline-code pair is measured separately`, async ({
+		test(`${name}: ${colorScheme} monospace heading remains readable`, async ({
 			page,
-			browserName,
 		}) => {
-			test.fail(
-				process.platform === 'linux' &&
-					browserName === 'webkit' &&
-					colorScheme === 'dark',
-				'Known Ubuntu WebKit dark ButtonText/ButtonFace limitation; do not lower text thresholds.',
-			);
 			await page.emulateMedia({ colorScheme });
 			await demo(page, name);
-			expect(
-				await contrast(page.locator('h1 code')),
-			).toBeGreaterThanOrEqual(4.5);
+			expect(await contrast(page.locator('h1'))).toBeGreaterThanOrEqual(
+				4.5,
+			);
 		});
 	}
 
@@ -348,6 +354,17 @@ test('container loading is keyboard-operable and retains focus', async ({
 			);
 		}),
 	).toBe(true);
+	await page.keyboard.press(
+		browserName === 'webkit' && process.platform === 'darwin'
+			? 'Alt+Tab'
+			: 'Tab',
+	);
+	await expect(
+		page
+			.locator('.code-demo-pair')
+			.filter({ has: page.getByLabel('Width of container 2') })
+			.locator('pre'),
+	).toBeFocused();
 	await page.keyboard.press(
 		browserName === 'webkit' && process.platform === 'darwin'
 			? 'Alt+Tab'
@@ -531,31 +548,32 @@ test('forced-color code pairs retain solid surfaces when gradients are suppresse
 	page,
 }) => {
 	await page.emulateMedia({ forcedColors: 'active' });
-	const css = substitute(await read('demo/styles.css'), [
-		'#ffffff',
-		'#000000',
-		'#000000',
-		'#ffff00',
-		'#000040',
-		'#ffffff',
-	]);
+	const css = substitute(
+		[await read('demo/styles.css'), await read('demo/demo-shell.css')].join(
+			'\n',
+		),
+		['#ffffff', '#000000', '#000000', '#ffff00', '#000040', '#ffffff'],
+	);
 	for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
 		await demo(page, name);
+		await page
+			.locator('link[rel="stylesheet"]')
+			.evaluateAll((links) => links.forEach((link) => link.remove()));
 		await page.addStyleTag({ content: css });
 		// Isolate authored pairs with distinct palette surfaces and no gradient painting.
 		await page.addStyleTag({
 			content:
 				'* { forced-color-adjust: none; background-image: none !important; }',
 		});
-		await expect(page.locator('h1 code')).toHaveCSS(
+		await expect(page.locator('h1')).toHaveCSS(
 			'background-color',
-			'rgb(0, 0, 0)',
+			'rgba(0, 0, 0, 0)',
 		);
 		await expect(page.locator('pre').first()).toHaveCSS(
 			'background-color',
-			'rgb(0, 0, 64)',
+			'rgb(255, 255, 255)',
 		);
-		for (const selector of ['h1 code', 'pre'])
+		for (const selector of ['h1', 'pre'])
 			expect(
 				await contrast(page.locator(selector).first()),
 			).toBeGreaterThanOrEqual(4.5);
