@@ -573,11 +573,15 @@ test('forced-color code pairs retain solid surfaces when gradients are suppresse
 			'background-color',
 			'rgba(0, 0, 0, 0)',
 		);
-		await expect(page.locator('pre').first()).toHaveCSS(
+		await expect(page.locator('micro-lighter').first()).toHaveCSS(
 			'background-color',
 			'rgb(0, 0, 64)',
 		);
-		for (const selector of ['h1', 'pre'])
+		await expect(page.locator('micro-lighter pre').first()).toHaveCSS(
+			'background-color',
+			'rgba(0, 0, 0, 0)',
+		);
+		for (const selector of ['h1', 'micro-lighter', 'pre'])
 			expect(
 				await contrast(page.locator(selector).first()),
 			).toBeGreaterThanOrEqual(4.5);
