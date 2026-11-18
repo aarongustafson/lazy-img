@@ -5,6 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>lazy-img Web Component Demo</title>
 		<link rel="stylesheet" href="./styles.css" />
+		<link rel="stylesheet" href="./demo-shell.css" />
 		<style>
 			/* Demo-specific styles */
 			.demo-container {
@@ -20,7 +21,7 @@
 				color: CanvasText;
 				padding: 0.5rem;
 				margin-bottom: 1rem;
-				font-family: monospace;
+				font-family: system-monospace, monospace;
 				font-size: 0.9em;
 			}
 
@@ -30,7 +31,7 @@
 				margin-top: 0.5rem;
 				border-left: 3px dashed CanvasText;
 				padding-inline-start: 0.5rem;
-				font-family: monospace;
+				font-family: system-monospace, monospace;
 			}
 			.load-time-display.loaded {
 				background: Canvas;
@@ -54,10 +55,12 @@
 			}
 		</style>
 	</head>
-	<body>
+	<body data-syntax-theme="github">
+		<a class="skip-link" href="#main">Skip to examples</a>
 		<header>
-			<h1><code>lazy-img</code> Web Component Demo</h1>
-			<p>
+			<p class="eyebrow">Web component / Examples</p>
+			<h1>&lt;lazy-img&gt;</h1>
+			<p class="lede">
 				Web component that enables you to lazy load images based on
 				container size, viewport size, or scroll position. See the
 				<a
@@ -66,9 +69,27 @@
 				>
 				for installation and API documentation.
 			</p>
+			<nav aria-label="Component resources">
+				<a
+					href="https://github.com/aarongustafson/lazy-img/blob/main/README.md"
+					>Read the README</a
+				>
+				<a href="https://github.com/aarongustafson/lazy-img"
+					>View on GitHub</a
+				>
+				<a href="./esm.html">esm.sh example</a>
+				<a href="./unpkg.html">unpkg example</a>
+			</nav>
 		</header>
 
-		<main>
+		<main id="main" tabindex="-1">
+			<p
+				id="microlighter-status"
+				class="enhancement-status"
+				role="status"
+				hidden
+			></p>
+
 			<noscript
 				><p class="note">
 					JavaScript is unavailable. Optional images stay unloaded;
@@ -118,10 +139,20 @@
 				<div class="demo-section">
 					<h3>Basic Usage</h3>
 					<div class="code-demo-pair">
-						<pre><code><mark>&lt;lazy-img
+						<micro-lighter
+							class="code-panel"
+							language="html"
+							controls="copy"
+							data-label="HTML"
+						>
+							<pre
+								aria-label="Basic Usage code 1"
+								tabindex="0"
+							><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
+						</micro-lighter>
 						<div class="demo">
 							<lazy-img
 								src="./sample.svg"
@@ -158,11 +189,21 @@
 						image won't load until you resize it.
 					</p>
 					<div class="code-demo-pair">
-						<pre><code><mark>&lt;lazy-img
+						<micro-lighter
+							class="code-panel"
+							language="html"
+							controls="copy"
+							data-label="HTML"
+						>
+							<pre
+								aria-label="Small Container (min-inline-size: 300px) code 2"
+								tabindex="0"
+							><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
   min-inline-size="300"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
+						</micro-lighter>
 						<div class="demo">
 							<label for="width-1">Width of container 1</label>
 							<input
@@ -212,11 +253,21 @@
 						trigger the image load.
 					</p>
 					<div class="code-demo-pair">
-						<pre><code><mark>&lt;lazy-img
+						<micro-lighter
+							class="code-panel"
+							language="html"
+							controls="copy"
+							data-label="HTML"
+						>
+							<pre
+								aria-label="Medium Container (min-inline-size: 500px) code 3"
+								tabindex="0"
+							><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
   min-inline-size="500"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
+						</micro-lighter>
 						<div class="demo">
 							<label for="width-2">Width of container 2</label>
 							<input
@@ -279,12 +330,22 @@
 				<div class="demo-section">
 					<h3>Viewport Width Check (min-inline-size: 768px)</h3>
 					<div class="code-demo-pair">
-						<pre><code><mark>&lt;lazy-img
+						<micro-lighter
+							class="code-panel"
+							language="html"
+							controls="copy"
+							data-label="HTML"
+						>
+							<pre
+								aria-label="Viewport Width Check (min-inline-size: 768px) code 4"
+								tabindex="0"
+							><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
   min-inline-size="768"
   query="media"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
+						</micro-lighter>
 						<div class="demo">
 							<lazy-img
 								src="./sample.svg"
@@ -327,11 +388,21 @@
 						viewport.
 					</p>
 					<div class="code-demo-pair">
-						<pre><code><mark>&lt;lazy-img
+						<micro-lighter
+							class="code-panel"
+							language="html"
+							controls="copy"
+							data-label="HTML"
+						>
+							<pre
+								aria-label="Basic View Mode (default: entry 0%) code 5"
+								tabindex="0"
+							><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
   query="view"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
+						</micro-lighter>
 						<div class="demo">
 							<div
 								style="
@@ -367,12 +438,22 @@
 					<h3>Threshold-Based (entry 50%)</h3>
 					<p>Loads when 50% of the image is visible.</p>
 					<div class="code-demo-pair">
-						<pre><code><mark>&lt;lazy-img
+						<micro-lighter
+							class="code-panel"
+							language="html"
+							controls="copy"
+							data-label="HTML"
+						>
+							<pre
+								aria-label="Threshold-Based (entry 50%) code 6"
+								tabindex="0"
+							><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
   query="view"
   view-range-start="entry 50%"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
+						</micro-lighter>
 						<div class="demo">
 							<div
 								style="
@@ -412,12 +493,22 @@
 						viewport (smooth UX).
 					</p>
 					<div class="code-demo-pair">
-						<pre><code><mark>&lt;lazy-img
+						<micro-lighter
+							class="code-panel"
+							language="html"
+							controls="copy"
+							data-label="HTML"
+						>
+							<pre
+								aria-label="Preload Before Visible (entry -200px) code 7"
+								tabindex="0"
+							><code><mark>&lt;lazy-img
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
   query="view"
   view-range-start="entry -200px"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
+						</micro-lighter>
 						<div class="demo">
 							<div
 								style="
@@ -465,7 +556,16 @@
 						chooses the appropriate size from srcset.
 					</p>
 					<div class="code-demo-pair">
-						<pre><code><mark>&lt;lazy-img
+						<micro-lighter
+							class="code-panel"
+							language="html"
+							controls="copy"
+							data-label="HTML"
+						>
+							<pre
+								aria-label="srcset with sizes code 8"
+								tabindex="0"
+							><code><mark>&lt;lazy-img
   src="./sample.svg"
   srcset="./sample-small.svg 400w,
           ./sample.svg 800w,
@@ -476,6 +576,7 @@
   alt="Mountain trail at sunrise illustration"
   min-inline-size="400"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
+						</micro-lighter>
 						<div class="demo">
 							<label for="width-3"
 								>Width of responsive-image container</label
@@ -543,7 +644,16 @@
 						different breakpoint values.
 					</p>
 					<div class="code-demo-pair">
-						<pre><code>&lt;style&gt;
+						<micro-lighter
+							class="code-panel"
+							language="html"
+							controls="copy"
+							data-label="HTML"
+						>
+							<pre
+								aria-label="Example with Named Breakpoints code 9"
+								tabindex="0"
+							><code>&lt;style&gt;
   :root {
     <mark>--lazy-img-mq: small;</mark>
   }
@@ -565,6 +675,7 @@
   named-breakpoints="medium, large"
   query="media"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
+						</micro-lighter>
 						<div class="demo">
 							<p>
 								<small
@@ -611,7 +722,16 @@
 						trigger the load event.
 					</p>
 					<div class="code-demo-pair">
-						<pre><code><mark>&lt;lazy-img
+						<micro-lighter
+							class="code-panel"
+							language="html"
+							controls="copy"
+							data-label="HTML"
+						>
+							<pre
+								aria-label="Event Example code 10"
+								tabindex="0"
+							><code><mark>&lt;lazy-img
   id="event-demo"
   src="./sample.svg"
   alt="Mountain trail at sunrise illustration"
@@ -624,6 +744,7 @@ document.getElementById('event-demo')
     console.log('Image loaded:', <mark>e.detail.src</mark>);
   });
 &lt;/script&gt;</code></pre>
+						</micro-lighter>
 						<div class="demo">
 							<label for="width-4"
 								>Width of event container</label
@@ -701,7 +822,7 @@ document.getElementById('event-demo')
 							display: none;
 						}
 						#state-demo-container .state-indicator {
-							font-family: monospace;
+							font-family: system-monospace, monospace;
 							font-size: 0.85em;
 							padding: 0.5rem;
 							margin-top: 0.5rem;
@@ -712,7 +833,16 @@ document.getElementById('event-demo')
 					</style>
 
 					<div class="code-demo-pair">
-						<pre><code>&lt;style&gt;
+						<micro-lighter
+							class="code-panel"
+							language="html"
+							controls="copy"
+							data-label="HTML"
+						>
+							<pre
+								aria-label="Controlling Visibility code 11"
+								tabindex="0"
+							><code>&lt;style&gt;
   /* Hide loaded images that don't qualify */
   <mark>lazy-img[loaded]:not([qualifies])</mark> {
     display: none;
@@ -725,6 +855,7 @@ document.getElementById('event-demo')
   alt="Mountain trail at sunrise illustration"
   min-inline-size="400"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
+						</micro-lighter>
 						<div class="demo">
 							<label for="width-state"
 								>Width of state container</label
@@ -786,12 +917,22 @@ document.getElementById('event-demo')
 					keeps an authored description and recovery link available.
 				</p>
 				<div class="code-demo-pair">
-					<pre><code><mark>&lt;lazy-img src="./missing-image.jpg"
+					<micro-lighter
+						class="code-panel"
+						language="html"
+						controls="copy"
+						data-label="HTML"
+					>
+						<pre
+							aria-label="Optional image download failure code 12"
+							tabindex="0"
+						><code><mark>&lt;lazy-img src="./missing-image.jpg"
   alt="Mountain trail at sunrise"&gt;&lt;/lazy-img&gt;</mark>
 &lt;p&gt;If the image is unavailable:
   mountain trail at sunrise.
   &lt;a href="./sample.svg"&gt;Open an alternative image&lt;/a&gt;.
 &lt;/p&gt;</code></pre>
+					</micro-lighter>
 					<div class="demo">
 						<lazy-img
 							src="./missing-image.jpg"
@@ -816,7 +957,16 @@ document.getElementById('event-demo')
 					and recovery link remain available if the image fails.
 				</p>
 				<div class="code-demo-pair">
-					<pre><code>&lt;figure&gt;
+					<micro-lighter
+						class="code-panel"
+						language="html"
+						controls="copy"
+						data-label="HTML"
+					>
+						<pre
+							aria-label="Essential image without JavaScript code 13"
+							tabindex="0"
+						><code>&lt;figure&gt;
   &lt;img src="./sample.svg" width="800" height="400"
     alt="A mountain trail at sunrise, shown as a simple illustration" /&gt;
   &lt;figcaption&gt;This essential image works without JavaScript.&lt;/figcaption&gt;
@@ -824,6 +974,7 @@ document.getElementById('event-demo')
 &lt;p&gt;If the image is unavailable: mountain trail at sunrise.
   &lt;a href="./sample.svg"&gt;Open an alternative image&lt;/a&gt;.
 &lt;/p&gt;</code></pre>
+					</micro-lighter>
 					<div class="demo">
 						<figure>
 							<img
@@ -1045,5 +1196,6 @@ document.getElementById('event-demo')
 				window.removeEventListener('resize', updateCurrentMQ);
 			});
 		</script>
+		<script type="module" src="./code-examples.js"></script>
 	</body>
 </html>
