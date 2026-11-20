@@ -67,6 +67,8 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 ## Coding Style
 
+Before changing demos, read [the demo editing guide](demo/README.md).
+
 This project uses:
 
 - ESLint for code quality

@@ -1,6 +1,13 @@
 import { readFile } from 'node:fs/promises';
 import { expect, it, vi } from 'vitest';
 
+it('trims block-edge margins inside demo sections', async () => {
+	const styles = await readFile('demo/demo-shell.css', 'utf8');
+	expect(styles).toMatch(
+		/\.demo-section(?:,\s*\.api-reference)?\s*\{[^}]*\bmargin-trim:\s*block;/,
+	);
+});
+
 it('updates only managed ESM versions without writing to the checkout', async () => {
 	const originalPackage = await readFile('package.json', 'utf8');
 	const pkg = JSON.parse(originalPackage);

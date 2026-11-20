@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { request as httpRequest } from 'node:http';
 import { test, expect } from '@playwright/test';
+import { expectNativeFocus, readDemoStyles } from './demo-fixture.js';
 
 test.beforeEach(async ({ page }) => {
 	await page.route(
@@ -123,6 +124,11 @@ const palettes = [
 	['#202020', '#ffffff', '#00000000', '#ffffff', '#00000000', '#ffffff'],
 ];
 
+test('demo navigation preserves unclipped native focus', async ({ page }) => {
+	await demo(page);
+	await expectNativeFocus(page.locator('header a').first());
+});
+
 function substitute(css, palette) {
 	const colors = Object.fromEntries(
 		tokens.map((token, index) => [token.toLowerCase(), palette[index]]),
@@ -222,10 +228,7 @@ for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
 		page,
 	}) => {
 		await demo(page, name);
-		const css = [
-			await read('demo/styles.css'),
-			await read('demo/demo-shell.css'),
-		].join('\n');
+		const css = await readDemoStyles(name);
 		await page
 			.locator('link[rel="stylesheet"]')
 			.evaluateAll((links) => links.forEach((link) => link.remove()));
@@ -349,15 +352,7 @@ test('container loading is keyboard-operable and retains focus', async ({
 		await page.keyboard.press('ArrowRight');
 	await expect(image).toHaveAttribute('loaded');
 	await expect(slider).toBeFocused();
-	expect(
-		await slider.evaluate((element) => {
-			const style = getComputedStyle(element);
-			return (
-				style.outlineStyle !== 'none' &&
-				parseFloat(style.outlineWidth) > 0
-			);
-		}),
-	).toBe(true);
+	await expectNativeFocus(slider);
 	await page.keyboard.press(
 		browserName === 'webkit' && process.platform === 'darwin'
 			? 'Alt+Tab'
@@ -552,13 +547,15 @@ test('forced-color code pairs retain solid surfaces when gradients are suppresse
 	page,
 }) => {
 	await page.emulateMedia({ forcedColors: 'active' });
-	const css = substitute(
-		[await read('demo/styles.css'), await read('demo/demo-shell.css')].join(
-			'\n',
-		),
-		['#ffffff', '#000000', '#000000', '#ffff00', '#000040', '#ffffff'],
-	);
 	for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
+		const css = substitute(await readDemoStyles(name), [
+			'#ffffff',
+			'#000000',
+			'#000000',
+			'#ffff00',
+			'#000040',
+			'#ffffff',
+		]);
 		await demo(page, name);
 		await page
 			.locator('link[rel="stylesheet"]')
