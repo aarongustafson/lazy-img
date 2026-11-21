@@ -4,58 +4,14 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>lazy-img Web Component Demo</title>
-		<link rel="stylesheet" href="./styles.css" />
 		<link rel="stylesheet" href="./demo-shell.css" />
-		<style>
-			/* Demo-specific styles */
-			.demo-container {
-				box-sizing: content-box;
-				container-type: inline-size;
-				border: 2px dashed CanvasText;
-				padding: 1rem;
-				margin: 1rem 0;
-				max-inline-size: calc(100% - 2rem - 4px);
-			}
-			.container-info {
-				background: Canvas;
-				color: CanvasText;
-				padding: 0.5rem;
-				margin-bottom: 1rem;
-				font-family: system-monospace, monospace;
-				font-size: 0.9em;
-			}
-
-			.load-time-display {
-				background: Canvas;
-				color: CanvasText;
-				margin-top: 0.5rem;
-				border-left: 3px dashed CanvasText;
-				padding-inline-start: 0.5rem;
-				font-family: system-monospace, monospace;
-			}
-			.load-time-display.loaded {
-				background: Canvas;
-				color: CanvasText;
-				border-left-style: solid;
-			}
-
-			/* Named breakpoint CSS custom property */
-			:root {
-				--lazy-img-mq: small;
-			}
-			@media (min-width: 768px) {
-				:root {
-					--lazy-img-mq: medium;
-				}
-			}
-			@media (min-width: 1024px) {
-				:root {
-					--lazy-img-mq: large;
-				}
-			}
-		</style>
+		<link rel="stylesheet" href="./styles.css" />
 	</head>
-	<body data-syntax-theme="github">
+	<body
+		data-demo-page="full"
+		data-demo-example="index"
+		data-syntax-theme="github"
+	>
 		<a class="skip-link" href="#main">Skip to examples</a>
 		<header>
 			<p class="eyebrow">Web component / Examples</p>
@@ -85,6 +41,9 @@
 		<main id="main" tabindex="-1">
 			<p
 				id="microlighter-status"
+				data-loading-message="Loading optional code highlighting and Copy controls."
+				data-failure-message="MicroLighter could not load. Code remains readable and selectable; the component loads independently."
+				data-theme-failure-message="Code highlighting and Copy controls are available, but the syntax theme could not load. The component loads independently."
 				class="enhancement-status"
 				role="status"
 				hidden
@@ -153,7 +112,7 @@
   alt="Mountain trail at sunrise illustration"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
 						</micro-lighter>
-						<div class="demo">
+						<div class="demo" data-demo-label="Live example">
 							<lazy-img
 								src="./sample.svg"
 								alt="Mountain trail at sunrise illustration"
@@ -204,7 +163,7 @@
   min-inline-size="300"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
 						</micro-lighter>
-						<div class="demo">
+						<div class="demo" data-demo-label="Live example">
 							<label for="width-1">Width of container 1</label>
 							<input
 								id="width-1"
@@ -268,7 +227,7 @@
   min-inline-size="500"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
 						</micro-lighter>
-						<div class="demo">
+						<div class="demo" data-demo-label="Live example">
 							<label for="width-2">Width of container 2</label>
 							<input
 								id="width-2"
@@ -346,7 +305,7 @@
   query="media"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
 						</micro-lighter>
-						<div class="demo">
+						<div class="demo" data-demo-label="Live example">
 							<lazy-img
 								src="./sample.svg"
 								alt="Mountain trail at sunrise illustration"
@@ -403,7 +362,7 @@
   query="view"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
 						</micro-lighter>
-						<div class="demo">
+						<div class="demo" data-demo-label="Live example">
 							<div
 								style="
 									height: 400px;
@@ -454,7 +413,7 @@
   view-range-start="entry 50%"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
 						</micro-lighter>
-						<div class="demo">
+						<div class="demo" data-demo-label="Live example">
 							<div
 								style="
 									height: 300px;
@@ -509,7 +468,7 @@
   view-range-start="entry -200px"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
 						</micro-lighter>
-						<div class="demo">
+						<div class="demo" data-demo-label="Live example">
 							<div
 								style="
 									height: 400px;
@@ -577,7 +536,7 @@
   min-inline-size="400"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
 						</micro-lighter>
-						<div class="demo">
+						<div class="demo" data-demo-label="Live example">
 							<label for="width-3"
 								>Width of responsive-image container</label
 							>
@@ -676,7 +635,7 @@
   query="media"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
 						</micro-lighter>
-						<div class="demo">
+						<div class="demo" data-demo-label="Live example">
 							<p>
 								<small
 									>Current breakpoint:
@@ -745,7 +704,7 @@ document.getElementById('event-demo')
   });
 &lt;/script&gt;</code></pre>
 						</micro-lighter>
-						<div class="demo">
+						<div class="demo" data-demo-label="Live example">
 							<label for="width-4"
 								>Width of event container</label
 							>
@@ -815,23 +774,6 @@ document.getElementById('event-demo')
 						qualify (e.g., after device rotation or resize).
 					</p>
 
-					<style>
-						/* Demo-specific styles for state attributes */
-						#state-demo-container
-							lazy-img[loaded]:not([qualifies]) {
-							display: none;
-						}
-						#state-demo-container .state-indicator {
-							font-family: system-monospace, monospace;
-							font-size: 0.85em;
-							padding: 0.5rem;
-							margin-top: 0.5rem;
-							background: Canvas;
-							color: CanvasText;
-							border-left: 3px solid CanvasText;
-						}
-					</style>
-
 					<div class="code-demo-pair">
 						<micro-lighter
 							class="code-panel"
@@ -856,7 +798,7 @@ document.getElementById('event-demo')
   min-inline-size="400"&gt;</mark>
 <mark>&lt;/lazy-img&gt;</mark></code></pre>
 						</micro-lighter>
-						<div class="demo">
+						<div class="demo" data-demo-label="Live example">
 							<label for="width-state"
 								>Width of state container</label
 							>
@@ -933,7 +875,7 @@ document.getElementById('event-demo')
   &lt;a href="./sample.svg"&gt;Open an alternative image&lt;/a&gt;.
 &lt;/p&gt;</code></pre>
 					</micro-lighter>
-					<div class="demo">
+					<div class="demo" data-demo-label="Live example">
 						<lazy-img
 							src="./missing-image.jpg"
 							alt="Mountain trail at sunrise"
@@ -975,7 +917,7 @@ document.getElementById('event-demo')
   &lt;a href="./sample.svg"&gt;Open an alternative image&lt;/a&gt;.
 &lt;/p&gt;</code></pre>
 					</micro-lighter>
-					<div class="demo">
+					<div class="demo" data-demo-label="Live example">
 						<figure>
 							<img
 								src="./sample.svg"
