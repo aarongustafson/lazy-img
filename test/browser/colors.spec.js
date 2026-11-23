@@ -140,6 +140,35 @@ function substitute(css, palette) {
 }
 
 for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
+	test(`${name}: each headed example has its own unique link destination`, async ({
+		page,
+	}) => {
+		await demo(page, name);
+		const examples = await page
+			.locator('.code-demo-pair')
+			.evaluateAll((pairs) =>
+				pairs.map((pair) => {
+					const block = pair.closest('.demo-section');
+					const owner = block.querySelector('h3')
+						? block
+						: block.closest('section');
+					return {
+						id: owner.id,
+						matches: [...document.querySelectorAll('[id]')].filter(
+							(element) => element.id === owner.id,
+						).length,
+					};
+				}),
+			);
+		for (const example of examples) {
+			expect(example.id).toMatch(/^[a-z][a-z0-9-]+$/);
+			expect(example.matches, example.id).toBe(1);
+		}
+		expect(new Set(examples.map(({ id }) => id)).size).toBe(
+			examples.length,
+		);
+	});
+
 	const selectors =
 		name === 'index.html'
 			? [...surfaces, '.note', '#event-status small']
@@ -276,6 +305,65 @@ for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
 		});
 	}
 
+	if (name !== 'index.html') {
+		test(`${name}: displayed registration and recovery links match the live example`, async ({
+			page,
+		}) => {
+			await demo(page, name);
+			const comparison = await page
+				.locator('.demo-section')
+				.evaluate((section) => {
+					const displayed = new DOMParser().parseFromString(
+						section.querySelector('pre code').textContent,
+						'text/html',
+					);
+					const compact = (text) => text.replace(/\s+/g, ' ').trim();
+					const liveScript = [...document.scripts].find((script) =>
+						script.textContent.includes('https://'),
+					);
+					return {
+						displayedScript: compact(
+							displayed.querySelector('script')?.textContent ||
+								'',
+						),
+						liveScript: compact(liveScript.textContent),
+						displayedLinks: [
+							...displayed.querySelectorAll('a'),
+						].map((link) => link.getAttribute('href')),
+						liveLinks: [...section.querySelectorAll('.demo a')].map(
+							(link) => link.getAttribute('href'),
+						),
+					};
+				});
+			expect(comparison.displayedScript).toBe(comparison.liveScript);
+			expect(comparison.displayedLinks).toEqual(comparison.liveLinks);
+		});
+	}
+}
+
+test('displayed visibility CSS is scoped to the same live state example', async ({
+	page,
+}) => {
+	await demo(page);
+	const selectors = await page
+		.locator('#state-attributes pre code')
+		.evaluate((code) => {
+			const displayed = new DOMParser().parseFromString(
+				code.textContent,
+				'text/html',
+			);
+			const sheet = new CSSStyleSheet();
+			sheet.replaceSync(displayed.querySelector('style').textContent);
+			return [...sheet.cssRules].map((rule) => rule.selectorText);
+		});
+	expect(selectors).toEqual([
+		'#state-demo-container lazy-img[loaded]:not([qualifies])',
+	]);
+	const css = await read('demo/styles.css');
+	expect(css).toContain(`${selectors[0]} {`);
+});
+
+for (const name of ['index.html', 'esm.html', 'unpkg.html']) {
 	test(`${name}: responsive code/live layout and enlarged text do not overflow the page`, async ({
 		page,
 	}) => {
@@ -413,8 +501,10 @@ test('failure and native no-JavaScript examples each show their complete live ma
 		const matches = await section
 			.locator('.demo')
 			.evaluate((live, displayed) => {
-				const template = document.createElement('template');
-				template.innerHTML = displayed;
+				const example = new DOMParser().parseFromString(
+					displayed,
+					'text/html',
+				).body;
 				const normalize = (root) => {
 					const walker = document.createTreeWalker(
 						root,
@@ -435,9 +525,14 @@ test('failure and native no-JavaScript examples each show their complete live ma
 					image.removeAttribute('loaded');
 					image.removeAttribute('qualifies');
 				});
-				normalize(template.content);
+				normalize(example);
 				normalize(actual);
-				return actual.innerHTML === template.innerHTML;
+				return (
+					actual.childNodes.length === example.childNodes.length &&
+					[...actual.childNodes].every((node, index) =>
+						node.isEqualNode(example.childNodes[index]),
+					)
+				);
 			}, displayed);
 		expect(matches, id).toBe(true);
 	}

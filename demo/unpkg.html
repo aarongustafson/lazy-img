@@ -47,11 +47,15 @@
 				hidden
 			></p>
 
-			<section class="demo-section">
+			<section class="demo-section" id="unpkg-guarded-registration">
 				<h2>Guarded registration helper</h2>
 				<p>
 					This page loads the guarded definition helper from
 					<code>unpkg</code> and registers the element when supported.
+					Importing the helper also calls it; the explicit call is
+					safe to repeat. Without JavaScript, or if the module can’t
+					load, the optional image isn’t created; its recovery link
+					remains available. Keep essential images native.
 				</p>
 
 				<div class="code-demo-pair">
@@ -72,7 +76,10 @@
 
 <mark>&lt;lazy-img src="./sample.svg"
   alt="Mountain trail at sunrise illustration"&gt;</mark>
-<mark>&lt;/lazy-img&gt;</mark></code></pre>
+<mark>&lt;/lazy-img&gt;</mark>
+&lt;p&gt;If the optional image is unavailable,
+  &lt;a href="./sample.svg"&gt;open an alternative image&lt;/a&gt;.
+&lt;/p&gt;</code></pre>
 					</micro-lighter>
 					<div class="demo" data-demo-label="Live example">
 						<lazy-img
