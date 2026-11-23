@@ -17,8 +17,9 @@
 			<p class="eyebrow">Web component / Examples</p>
 			<h1>&lt;lazy-img&gt;</h1>
 			<p class="lede">
-				Web component that enables you to lazy load images based on
-				container size, viewport size, or scroll position. See the
+				This component creates optional images based on container size,
+				viewport size, or scroll position. Use native images for
+				essential content. See the
 				<a
 					href="https://github.com/aarongustafson/lazy-img/blob/main/README.md"
 					>README</a
@@ -56,46 +57,23 @@
 					standard image for essential content.
 				</p></noscript
 			>
-			<p class="note">
-				<strong>Performance Benefit:</strong> Unlike
-				<code>picture</code> or <code>srcset</code> which always load
-				<em>some</em> image, <code>lazy-img</code> can completely skip
-				loading images on screens below your threshold. This saves
-				bandwidth and improves performance for users on smaller devices
-				or slower connections.
-			</p>
-			<p class="note">
-				<strong>Note on Resize Behavior:</strong> Once an image is
-				loaded, it remains loaded even if the viewport or container is
-				resized below the threshold. This is intentional for performance
-				— the component prevents unnecessary downloads, but doesn't
-				unload images that are already in memory. Use the
-				<code>loaded</code> and <code>qualifies</code> attributes to
-				control visibility with CSS if needed.
-			</p>
 			<!-- Basic Example -->
 			<section id="basic-example">
 				<h2>Basic Example</h2>
-				<p>Simple image that loads immediately (no conditions).</p>
+				<p>
+					Set <code>src</code> and <code>alt</code> for an optional
+					image. With no conditions, the component creates its image
+					when it upgrades. Without JavaScript, it creates no image.
+				</p>
 				<p class="note">
-					<strong>💡 Performance Note:</strong> While this pattern
-					loads the image immediately (like a standard
-					<code>img</code>), it still provides a benefit:
-					<strong
-						>if JavaScript fails to load or execute, the image won't
-						load at all</strong
-					>. This can be desirable for non-critical, optional images
-					that enhance but aren't essential to the content (e.g.,
-					decorative images, supplementary graphics, or marketing
-					banners). <br /><br />
-					<strong>⚠️ Important:</strong> Only use this pattern for
-					non-critical images that aren't referenced in your content.
-					Critical images that are part of your content should use
-					standard <code>img</code> tags to ensure they load even when
-					JavaScript is unavailable.
+					For ordinary offscreen images, native
+					<code>&lt;img loading="lazy"&gt;</code> lets the browser
+					defer requests without custom-element registration.
+					<code>lazy-img</code> adds conditions before creating an
+					image; it’s not a replacement for essential native images.
 				</p>
 
-				<div class="demo-section">
+				<div class="demo-section" id="basic-usage">
 					<h3>Basic Usage</h3>
 					<div class="code-demo-pair">
 						<micro-lighter
@@ -127,25 +105,26 @@
 			<section id="container-query-example">
 				<h2>Container Query Example (Default)</h2>
 				<p>
-					<strong>💡 Key Feature:</strong> Images only load when the
-					container reaches the minimum size. If the container never
-					gets that big, the image <em>never loads</em> — saving
-					bandwidth! The default query type is "container".
+					Set <code>min-inline-size</code> to wait for the parent’s
+					content-box inline size. The default query type is
+					<code>container</code>. If the parent never reaches that
+					size, the component doesn’t create the image.
 				</p>
 				<p style="padding: 0.75rem; border-radius: 4px">
 					<strong>Try it:</strong> Each container below starts smaller
 					than needed. Use its labeled width slider (arrow keys, Home,
 					and End), or drag the resize handle (bottom-right corner),
 					to widen the container and watch the image lazy load when it
-					hits the threshold.
+					hits the threshold. On narrow screens, the available space
+					may be below that threshold; use a wider window.
 				</p>
 
-				<div class="demo-section">
+				<div class="demo-section" id="container-300">
 					<h3>Small Container (min-inline-size: 300px)</h3>
 					<p>
-						👉 <strong>Widen this container to 300px</strong> to see
-						the image load. It starts at 200px (too small), so the
-						image won't load until you resize it.
+						<strong>Widen this container to 300px</strong> to create
+						the image. It starts at 200px. Once created, the image
+						remains if you shrink the container again.
 					</p>
 					<div class="code-demo-pair">
 						<micro-lighter
@@ -205,7 +184,7 @@
 					</div>
 				</div>
 
-				<div class="demo-section">
+				<div class="demo-section" id="container-500">
 					<h3>Medium Container (min-inline-size: 500px)</h3>
 					<p>
 						👉 <strong>Widen this container to 500px</strong> to
@@ -274,11 +253,10 @@
 			<section id="media-query-example">
 				<h2>Media Query Example</h2>
 				<p>
-					Image loads based on viewport width. Uses
-					<code>query="media"</code> to check window width instead of
-					container width. This is perfect for saving bandwidth on
-					mobile devices — if the viewport is below 768px, this image
-					<em>never loads</em>.
+					Set <code>query="media"</code> to check window width instead
+					of container size. This image waits for a viewport at least
+					768px wide. Shrinking the viewport afterward doesn’t unload
+					the image or cancel its request.
 				</p>
 				<p style="padding: 0.75rem; border-radius: 4px">
 					<strong>Try it:</strong> Resize your browser window to see
@@ -286,7 +264,7 @@
 					wide.
 				</p>
 
-				<div class="demo-section">
+				<div class="demo-section" id="viewport-768">
 					<h3>Viewport Width Check (min-inline-size: 768px)</h3>
 					<div class="code-demo-pair">
 						<micro-lighter
@@ -328,22 +306,32 @@
 			<section id="view-mode-example">
 				<h2>View Mode (Scroll-Based Loading)</h2>
 				<p>
-					Image loads when scrolled into view using
-					IntersectionObserver. Uses <code>query="view"</code> for
-					scroll-based lazy loading. This is the classic "lazy load as
-					you scroll" pattern — images only load when they become
-					visible or are about to become visible.
+					Set <code>query="view"</code> to create the image after an
+					intersecting IntersectionObserver notification. The observer
+					measures the host’s box. View mode ignores size conditions
+					and doesn’t set <code>qualifies</code>.
 				</p>
 				<p style="padding: 0.75rem; border-radius: 4px">
 					<strong>Try it:</strong> Scroll down to see images load as
 					they enter the viewport. The timing can be controlled with
 					<code>view-range-start</code>.
 				</p>
+				<p class="note">
+					The current callback checks intersection, not the visibility
+					ratio. Examples sharing observer settings can also trigger
+					each other. The settings below aren’t a guarantee of
+					per-image request timing. See the
+					<a
+						href="https://github.com/aarongustafson/lazy-img/blob/main/README.md#view-mode-intersectionobserver"
+						>view-mode reference</a
+					>.
+				</p>
 
-				<div class="demo-section">
+				<div class="demo-section" id="view-entry">
 					<h3>Basic View Mode (default: entry 0%)</h3>
 					<p>
-						Loads as soon as any part of the image enters the
+						The default setting uses a zero intersection threshold.
+						After creation, the image remains when it leaves the
 						viewport.
 					</p>
 					<div class="code-demo-pair">
@@ -393,9 +381,14 @@
 					</div>
 				</div>
 
-				<div class="demo-section">
+				<div class="demo-section" id="view-half">
 					<h3>Threshold-Based (entry 50%)</h3>
-					<p>Loads when 50% of the image is visible.</p>
+					<p>
+						Set <code>view-range-start="entry 50%"</code> to
+						configure a 50% observer threshold. The callback can
+						still create the image on an earlier intersecting
+						notification.
+					</p>
 					<div class="code-demo-pair">
 						<micro-lighter
 							class="code-panel"
@@ -424,7 +417,8 @@
 								"
 							>
 								<p>
-									👇 Scroll until 50% of the image is visible
+									👇 Scroll toward the image to observe
+									creation
 								</p>
 							</div>
 							<lazy-img
@@ -445,11 +439,11 @@
 					</div>
 				</div>
 
-				<div class="demo-section">
+				<div class="demo-section" id="view-preload">
 					<h3>Preload Before Visible (entry -200px)</h3>
 					<p>
-						Starts loading 200px before the image enters the
-						viewport (smooth UX).
+						Set <code>view-range-start="entry -200px"</code> to
+						expand the observer’s bottom margin by 200px.
 					</p>
 					<div class="code-demo-pair">
 						<micro-lighter
@@ -478,7 +472,10 @@
 									margin-bottom: 1rem;
 								"
 							>
-								<p>👇 Image loads 200px before you see it</p>
+								<p>
+									👇 The observer includes 200px below the
+									viewport
+								</p>
 							</div>
 							<lazy-img
 								id="view-demo-3"
@@ -503,11 +500,11 @@
 			<section id="responsive-images">
 				<h2>Responsive Images with srcset and sizes</h2>
 				<p>
-					Combine lazy loading with responsive images using srcset and
-					sizes attributes.
+					Pass <code>srcset</code> and <code>sizes</code> to the
+					created image so the browser can select a source.
 				</p>
 
-				<div class="demo-section">
+				<div class="demo-section" id="responsive-sources">
 					<h3>srcset with sizes</h3>
 					<p>
 						👉 <strong>Widen this container to 400px</strong> to
@@ -595,7 +592,7 @@
 					load when the breakpoint name matches.
 				</p>
 
-				<div class="demo-section">
+				<div class="demo-section" id="named-media-breakpoints">
 					<h3>Example with Named Breakpoints</h3>
 					<p>
 						This demo sets <code>--lazy-img-mq</code> via CSS media
@@ -613,16 +610,16 @@
 								aria-label="Example with Named Breakpoints code 9"
 								tabindex="0"
 							><code>&lt;style&gt;
-  :root {
+  :root:has(body[data-demo-example="index"]) {
     <mark>--lazy-img-mq: small;</mark>
   }
   @media (min-width: 768px) {
-    :root {
+    :root:has(body[data-demo-example="index"]) {
       <mark>--lazy-img-mq: medium;</mark>
     }
   }
   @media (min-width: 1024px) {
-    :root {
+    :root:has(body[data-demo-example="index"]) {
       <mark>--lazy-img-mq: large;</mark>
     }
   }
@@ -670,11 +667,13 @@
 				<p>
 					The component dispatches a
 					<code>lazy-img:loaded</code> event when it creates the image
-					and starts its request. This event does not confirm that the
-					image downloaded or decoded.
+					and a request can begin. This event does not confirm that
+					the image downloaded or decoded. A native
+					<code>loading="lazy"</code> hint can defer the fetch
+					further.
 				</p>
 
-				<div class="demo-section">
+				<div class="demo-section" id="request-event">
 					<h3>Event Example</h3>
 					<p>
 						👉 <strong>Widen this container to 350px</strong> to
@@ -700,7 +699,7 @@
 &lt;script&gt;
 document.getElementById('event-demo')
   <mark>.addEventListener('lazy-img:loaded', (e) => {</mark>
-    console.log('Image loaded:', <mark>e.detail.src</mark>);
+    console.log('Image created; request may begin:', <mark>e.detail.src</mark>);
   });
 &lt;/script&gt;</code></pre>
 						</micro-lighter>
@@ -762,16 +761,20 @@ document.getElementById('event-demo')
 				<p>
 					The component provides two boolean attributes to track
 					state:
-					<code>loaded</code> (has the image request started?) and
-					<code>qualifies</code> (does it currently meet conditions to
-					show?). These allow you to control visibility with CSS.
+					<code>loaded</code> (has the component created its image?)
+					and <code>qualifies</code> (does it currently meet
+					conditions to show?). These allow you to control visibility
+					with CSS.
 				</p>
 
-				<div class="demo-section">
+				<div class="demo-section" id="state-visibility">
 					<h3>Controlling Visibility</h3>
 					<p>
-						This example hides images that loaded but no longer
-						qualify (e.g., after device rotation or resize).
+						Widen this container to 400px, then shrink it. This
+						example’s CSS hides the created image when it no longer
+						qualifies; it doesn’t unload it. Don’t apply this rule
+						to view-mode images, which don’t receive
+						<code>qualifies</code>.
 					</p>
 
 					<div class="code-demo-pair">
@@ -785,18 +788,20 @@ document.getElementById('event-demo')
 								aria-label="Controlling Visibility code 11"
 								tabindex="0"
 							><code>&lt;style&gt;
-  /* Hide loaded images that don't qualify */
-  <mark>lazy-img[loaded]:not([qualifies])</mark> {
+  /* Hide created images that don't qualify in this example */
+  <mark>#state-demo-container lazy-img[loaded]:not([qualifies])</mark> {
     display: none;
   }
 
 &lt;/style&gt;
 
-<mark>&lt;lazy-img
-  src="./sample.svg"
-  alt="Mountain trail at sunrise illustration"
-  min-inline-size="400"&gt;</mark>
-<mark>&lt;/lazy-img&gt;</mark></code></pre>
+&lt;div id="state-demo-container"&gt;
+  <mark>&lt;lazy-img
+    src="./sample.svg"
+    alt="Mountain trail at sunrise illustration"
+    min-inline-size="400"&gt;</mark>
+  <mark>&lt;/lazy-img&gt;</mark>
+&lt;/div&gt;</code></pre>
 						</micro-lighter>
 						<div class="demo" data-demo-label="Live example">
 							<label for="width-state"
@@ -964,7 +969,7 @@ document.getElementById('event-demo')
 
 		<script src="../define.js" type="module"></script>
 		<script>
-			// Track load times for view mode demos
+			// Track image creation times for view mode demos
 			function setupLoadTimeTracking(imgId, statusId) {
 				const img = document.getElementById(imgId);
 				const status = document.getElementById(statusId);
@@ -981,7 +986,7 @@ document.getElementById('event-demo')
 							`Request started after ${elapsed}s — ${e.detail.src}. Download success is not confirmed by this event.`;
 						status.classList.add('loaded');
 						console.log(
-							`${imgId} loaded after ${elapsed}s:`,
+							`${imgId} created after ${elapsed}s:`,
 							e.detail.src,
 						);
 					});
@@ -1090,7 +1095,10 @@ document.getElementById('event-demo')
 						status.querySelector('small').textContent =
 							`Event fired: request started for ${e.detail.src}. Download success is not confirmed by this event.`;
 					}
-					console.log('Image loaded:', e.detail.src);
+					console.log(
+						'Image created; request may begin:',
+						e.detail.src,
+					);
 				});
 			}
 
