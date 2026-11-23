@@ -4,16 +4,14 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>lazy-img via esm.sh</title>
-		<link rel="stylesheet" href="./styles.css" />
 		<link rel="stylesheet" href="./demo-shell.css" />
-		<style>
-			lazy-img {
-				display: block;
-				max-width: 600px;
-			}
-		</style>
+		<link rel="stylesheet" href="./styles.css" />
 	</head>
-	<body data-syntax-theme="github">
+	<body
+		data-demo-page="full"
+		data-demo-example="esm"
+		data-syntax-theme="github"
+	>
 		<a class="skip-link" href="#main">Skip to examples</a>
 		<header>
 			<p class="eyebrow">Web component / esm</p>
@@ -41,16 +39,22 @@
 		<main id="main" tabindex="-1">
 			<p
 				id="microlighter-status"
+				data-loading-message="Loading optional code highlighting and Copy controls."
+				data-failure-message="MicroLighter could not load. Code remains readable and selectable; the component loads independently."
+				data-theme-failure-message="Code highlighting and Copy controls are available, but the syntax theme could not load. The component loads independently."
 				class="enhancement-status"
 				role="status"
 				hidden
 			></p>
 
-			<section class="demo-section">
+			<section class="demo-section" id="esm-manual-registration">
 				<h2>Class-only import with manual registration</h2>
 				<p>
 					This page loads the component class from
-					<code>esm.sh</code> and registers it manually.
+					<code>esm.sh</code> and registers it if the tag isn’t
+					already defined. Without JavaScript, or if the module can’t
+					load, the optional image isn’t created; its recovery link
+					remains available. Keep essential images native.
 				</p>
 
 				<div class="code-demo-pair">
@@ -66,14 +70,19 @@
 						><code>&lt;script type="module"&gt;
 <mark>import { LazyImgElement } from
   'https://esm.sh/@aarongustafson/lazy-img@2.1.3/lazy-img.js?bundle&amp;target=es2022';</mark>
-<mark>customElements.define('lazy-img', LazyImgElement);</mark>
+<mark>if (!customElements.get('lazy-img')) {
+  customElements.define('lazy-img', LazyImgElement);
+}</mark>
 &lt;/script&gt;
 
 <mark>&lt;lazy-img src="./sample.svg"
   alt="Mountain trail at sunrise illustration"&gt;</mark>
-<mark>&lt;/lazy-img&gt;</mark></code></pre>
+<mark>&lt;/lazy-img&gt;</mark>
+&lt;p&gt;If the optional image is unavailable,
+  &lt;a href="./sample.svg"&gt;open an alternative image&lt;/a&gt;.
+&lt;/p&gt;</code></pre>
 					</micro-lighter>
-					<div class="demo">
+					<div class="demo" data-demo-label="Live example">
 						<lazy-img
 							src="./sample.svg"
 							alt="Mountain trail at sunrise illustration"

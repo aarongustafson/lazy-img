@@ -6,9 +6,15 @@
 [![License](https://img.shields.io/npm/l/@aarongustafson/lazy-img)](https://github.com/aarongustafson/lazy-img/blob/main/LICENSE)
 [![Type definitions](https://img.shields.io/npm/types/@aarongustafson/lazy-img)](https://github.com/aarongustafson/lazy-img/blob/main/lazy-img.d.ts)
 
-A lightweight, flexible web component for lazy-loading images based on viewport or container size. Perfect for responsive images that should only load when needed.
+`<lazy-img>` creates an optional image when its container size, viewport size,
+or scroll position meets an authored condition. Use a native `<img>` for
+essential content: the component creates no image without JavaScript.
 
-Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-lazy-images.js) by Aaron Gustafson, now reimagined as a modern Custom Element.
+For ordinary offscreen images, native
+[`loading="lazy"`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/img#loading)
+lets the browser defer a request without depending on custom-element registration.
+`<lazy-img>` adds size and intersection conditions before creating the `<img>`.
+Its `loading` attribute passes the browser’s hint to that image.
 
 ## Demo
 
@@ -19,22 +25,25 @@ Based on the original [Easy Lazy Images](https://github.com/easy-designs/easy-la
 - [unpkg](https://aarongustafson.github.io/lazy-img/demo/unpkg.html) ([Source](./demo/unpkg.html))
 - [esm.sh](https://aarongustafson.github.io/lazy-img/demo/esm.html) ([Source](./demo/esm.html))
 
-## Why Use This?
+## Conditional images
 
-**Performance Benefit:** Unlike `picture` or `srcset` which always load _some_ image variant, `lazy-img` can **completely skip loading images** on screens or containers below your specified threshold. This saves bandwidth and improves performance for users on smaller devices or slower connections.
+If a size condition never qualifies, the component doesn’t create its image.
+For example, `min-inline-size="768" query="media"` waits for a viewport at least
+768px wide. Viewport width doesn’t identify a device or its connection speed.
 
-For example, if you set `min-inline-size="768"`, mobile users will never download that image at all — saving their data and speeding up your page load.
-
-**Note on Resize Behavior:** Once an image is loaded, it remains loaded even if the viewport or container is resized below the threshold. This is intentional for performance — the component prevents unnecessary downloads, but doesn't unload images that are already in memory. Use the [`loaded` and `qualifies` attributes](#controlling-visibility-with-state-attributes) to control visibility with CSS if needed.
+Once created, the image remains when the viewport or container shrinks below
+the threshold. That resize doesn’t unload it or cancel its request. Use the
+[`loaded` and `qualifies` attributes](#controlling-visibility-with-state-attributes)
+to hide it if appropriate; CSS hiding doesn’t undo a request.
 
 ## Features
 
 - **[Container Queries](#container-query-default)**: Load images based on container width (default)
 - **[Media Queries](#media-query)**: Load images based on viewport width
-- **[View-Based Loading](#view-mode-intersectionobserver)**: Load images when they enter the viewport using IntersectionObserver
+- **[View-Based Loading](#view-mode-intersectionobserver)**: Create images after intersecting observer notifications, with the limitations below
 - **[Named Breakpoints](#named-breakpoints)**: Support for named breakpoints via CSS custom properties
 - **[Responsive Images](#responsive-images)**: Full support for `srcset` and `sizes`
-- **Throttled Resize**: Efficient resize handling to prevent performance issues
+- **Resize handling**: Size checks run after a 150ms delay
 
 ## Installation
 
@@ -47,6 +56,8 @@ npm install @aarongustafson/lazy-img
 ### Import
 
 **Option 1: Manual registration**
+
+The main import exports the class without registering it:
 
 ```javascript
 import { LazyImgElement } from '@aarongustafson/lazy-img';
@@ -69,6 +80,10 @@ import { defineLazyImg } from '@aarongustafson/lazy-img/define.js';
 defineLazyImg();
 ```
 
+Importing `define.js` also calls `defineLazyImg()`. The helper skips an existing
+definition and returns `true` when a custom-element registry is available,
+or `false` otherwise.
+
 You can also include the guarded script from HTML:
 
 ```html
@@ -85,8 +100,12 @@ You can also include the guarded script from HTML:
 [View Demo](https://aarongustafson.github.io/lazy-img/demo/#basic-example)
 
 ```html
-<lazy-img src="image.jpg" alt="A beautiful image"> </lazy-img>
+<lazy-img src="trail.jpg" alt="Mountain trail at sunrise"></lazy-img>
 ```
+
+With no conditions in container or media mode, the component creates the image
+when it upgrades. Before upgrade, or if JavaScript fails, this markup supplies
+no image. Keep essential information in native HTML.
 
 ### Container Query (Default)
 
@@ -99,7 +118,8 @@ Load an image when its container reaches a minimum width:
 </lazy-img>
 ```
 
-The image will load when the `lazy-img` element's container reaches 500px width.
+The component creates the image when its parent’s observed content-box inline
+size reaches 500px. You don’t need `container-type` to enable its ResizeObserver.
 
 ### Media Query
 
@@ -117,27 +137,30 @@ Load an image based on viewport width:
 </lazy-img>
 ```
 
-The image will load when the browser window is at least 768px wide.
+The component creates the image when `window.innerWidth` is at least 768px.
 
 ### View Mode (IntersectionObserver)
 
 Load images when they scroll into view using IntersectionObserver:
 
 ```html
-<lazy-img src="image.jpg" alt="Loads when scrolled into view" query="view">
+<lazy-img src="trail.jpg" alt="Mountain trail at sunrise" query="view">
 </lazy-img>
 ```
 
-The image will load when it enters the viewport. The default behavior (`view-range-start="entry 0%"`) loads as soon as any part of the image is visible.
+The default `view-range-start="entry 0%"` requests observation with a zero
+intersection threshold. The component creates the image after an intersecting
+observer notification. Observation uses the host element’s box, not a
+downloaded image’s dimensions.
 
 #### Control When Images Load
 
-**Load when 50% visible:**
+**Set a 50% intersection threshold:**
 
 ```html
 <lazy-img
   src="image.jpg"
-  alt="Loads when half visible"
+  alt="Mountain trail at sunrise"
   query="view"
   view-range-start="entry 50%"
 >
@@ -149,19 +172,27 @@ The image will load when it enters the viewport. The default behavior (`view-ran
 ```html
 <lazy-img
   src="image.jpg"
-  alt="Preloads 200px before visible"
+  alt="Mountain trail at sunrise"
   query="view"
   view-range-start="entry -200px"
 >
 </lazy-img>
 ```
 
-The `view-range-start` attribute uses scroll-driven animation syntax:
+The `view-range-start` attribute accepts this subset of scroll-driven animation syntax:
 
-- `"entry X%"` - Load when X% of the element is visible (e.g., `"entry 25%"` = 25% visible)
-- `"entry -Xpx"` - Preload X pixels before entering viewport (e.g., `"entry -300px"` = load 300px before visible)
+- `"entry X%"` sets an IntersectionObserver threshold from 0% to 100%.
+- `"entry -Xpx"` expands the observer’s bottom margin by X pixels.
+- Invalid values warn in the console and fall back to `"entry 0%"`.
 
-**Note:** Unlike container or media query modes, view mode doesn't use the `qualifies` attribute. Images load once when the intersection condition is met and remain loaded.
+**Current limitation:** The callback checks `isIntersecting`, not the intersection
+ratio. Elements with the same observer settings also share callbacks: an
+intersecting notification for one can create the others’ images. These settings
+aren’t a guarantee of per-image visibility or request timing.
+
+View mode ignores `min-inline-size` and `named-breakpoints`, doesn’t set
+`qualifies`, and stops observing after its creation callback. The image remains
+after it leaves the viewport.
 
 ### Responsive Images
 
@@ -218,7 +249,11 @@ You can use named breakpoints by defining the `--lazy-img-mq` CSS custom propert
 </lazy-img>
 ```
 
-The image will load when the `--lazy-img-mq` custom property matches any of the specified breakpoint names.
+The component creates the image when the `--lazy-img-mq` custom property on
+`:root` matches one of the comma-separated names. Names are case-sensitive.
+In container and media modes, `named-breakpoints` takes precedence over
+`min-inline-size`. A missing CSS value or an invalid numeric minimum warns in
+the console and doesn’t qualify.
 
 ## API
 
@@ -228,21 +263,23 @@ The image will load when the `--lazy-img-mq` custom property matches any of the 
 
 These attributes are passed through to the `<img>` element when loading conditions are met:
 
-| Attribute        | Type            | Default | Description                                                |
-| ---------------- | --------------- | ------- | ---------------------------------------------------------- |
-| `src`            | String          | -       | **Required.** The image source URL                         |
-| `alt`            | String          | `""`    | Alternative text for the image                             |
-| `srcset`         | String          | -       | Responsive image source set                                |
-| `sizes`          | String          | -       | Responsive image sizes                                     |
-| `width`          | String (Number) | -       | Intrinsic width of the image (helps prevent layout shift)  |
-| `height`         | String (Number) | -       | Intrinsic height of the image (helps prevent layout shift) |
-| `loading`        | String          | -       | Native lazy loading hint: `"lazy"` or `"eager"`            |
-| `decoding`       | String          | -       | Image decoding hint: `"async"`, `"sync"`, or `"auto"`      |
-| `fetchpriority`  | String          | -       | Resource fetch priority: `"high"`, `"low"`, or `"auto"`    |
-| `crossorigin`    | String          | -       | CORS settings: `"anonymous"` or `"use-credentials"`        |
-| `referrerpolicy` | String          | -       | Referrer policy for the image request                      |
+| Attribute        | Type            | Default | Description                                             |
+| ---------------- | --------------- | ------- | ------------------------------------------------------- |
+| `src`            | String          | -       | **Required.** The image source URL                      |
+| `alt`            | String          | `""`    | Alternative text for the image                          |
+| `srcset`         | String          | -       | Responsive image source set                             |
+| `sizes`          | String          | -       | Responsive image sizes                                  |
+| `width`          | String (Number) | -       | Intrinsic width passed to the created image             |
+| `height`         | String (Number) | -       | Intrinsic height passed to the created image            |
+| `loading`        | String          | -       | Native lazy loading hint: `"lazy"` or `"eager"`         |
+| `decoding`       | String          | -       | Image decoding hint: `"async"`, `"sync"`, or `"auto"`   |
+| `fetchpriority`  | String          | -       | Resource fetch priority: `"high"`, `"low"`, or `"auto"` |
+| `crossorigin`    | String          | -       | CORS settings: `"anonymous"` or `"use-credentials"`     |
+| `referrerpolicy` | String          | -       | Referrer policy for the image request                   |
 
-**Note:** The `<img>` element is only created in the shadow DOM when loading conditions are met (or immediately if no conditions are specified). These attributes are applied to the `<img>` at that time.
+The component applies these attributes to the `<img>` in its shadow root when
+it creates the image. Container and media modes create it immediately if no
+conditions are specified; view mode waits for an observer notification.
 
 #### Configuration Attributes
 
@@ -257,29 +294,51 @@ These attributes are passed through to the `<img>` element when loading conditio
 
 | Attribute   | Type    | Description                                                                            |
 | ----------- | ------- | -------------------------------------------------------------------------------------- |
-| `loaded`    | Boolean | Reflects whether the image has been loaded                                             |
+| `loaded`    | Boolean | The component has created the image; not download completion or success                |
 | `qualifies` | Boolean | Reflects whether element currently meets conditions to display (not used in view mode) |
 
 ### Query Types
 
-- **`container`** (default): Uses ResizeObserver to watch the element's container size
+- **`container`** (default): Uses ResizeObserver to watch the parent’s content-box inline size
 - **`media`**: Uses window resize events to watch viewport size
 - **`view`**: Uses IntersectionObserver to watch when element enters viewport
+
+### Properties and updates
+
+Properties reflect the corresponding attributes. Hyphenated configuration names
+use `minInlineSize`, `namedBreakpoints`, and `viewRangeStart`; the image properties
+include `fetchPriority`, `crossOrigin`, and `referrerPolicy`. Other names stay
+the same. `loaded` and `qualifies` are read-only booleans. See the
+[declarations](./lazy-img.d.ts) for the complete list.
+
+After creation, changing `src`, `srcset`, or `sizes` doesn’t update the image
+immediately. Other image attributes update the existing image; a later render
+can also apply the current source attributes. Configuration changes aren’t a
+general-purpose reset or mode-switch API. Configure conditions before connecting
+the element; use a new element for a different conditional image.
+
+The component has no additional documented instance methods.
 
 ### Events
 
 [View Demo](https://aarongustafson.github.io/lazy-img/demo/#events)
 
-| Event             | Detail            | Description                     |
-| ----------------- | ----------------- | ------------------------------- |
-| `lazy-img:loaded` | `{ src: string }` | Fired when the image has loaded |
+| Event             | Detail            | Description                                                |
+| ----------------- | ----------------- | ---------------------------------------------------------- |
+| `lazy-img:loaded` | `{ src: string }` | Fired after image creation, not after download or decoding |
+
+The event bubbles and crosses shadow boundaries. `src` is the authored source,
+not necessarily the responsive candidate selected by the browser. Neither this
+event nor `loaded` confirms that a request succeeded; `loading="lazy"` may defer
+the actual fetch even after creation. Listen to the shadow image’s native
+`load` or `error` event if your application needs that result.
 
 #### Event Example
 
 ```javascript
 const lazyImg = document.querySelector('lazy-img');
 lazyImg.addEventListener('lazy-img:loaded', (event) => {
-  console.log('Image loaded:', event.detail.src);
+  console.log('Image created; request may begin:', event.detail.src);
 });
 ```
 
@@ -311,9 +370,7 @@ lazy-img {
 
 ## Examples
 
-### Preventing Layout Shift with Width and Height
-
-[Recommended for Core Web Vitals]
+### Image Dimensions and Reserved Space
 
 ```html
 <lazy-img
@@ -326,23 +383,35 @@ lazy-img {
 </lazy-img>
 ```
 
-The `width` and `height` attributes help browsers calculate the aspect ratio and reserve space before the image loads, preventing Cumulative Layout Shift (CLS).
+The component passes `width` and `height` to the created `<img>`, where the
+browser can use them for its aspect ratio. They don’t reserve the host’s space
+before enhancement or before the condition qualifies. If the layout needs that
+space, author host sizing, for example:
 
-### Using fetchpriority for LCP Images
+```css
+lazy-img {
+  aspect-ratio: 4 / 3;
+}
+```
+
+This isn’t a guarantee against layout shifts; check the surrounding layout too.
+
+### Native Images for Essential Content
 
 ```html
-<lazy-img
+<img
   src="hero-image.jpg"
-  alt="Hero image"
+  alt="Mountain trail leading toward a sunlit peak"
   width="1200"
   height="600"
   fetchpriority="high"
   loading="eager"
->
-</lazy-img>
+/>
 ```
 
-Use `fetchpriority="high"` for above-the-fold images that are critical for Largest Contentful Paint (LCP).
+Use native markup for essential images, including a page’s main image.
+`fetchpriority="high"` is a browser hint, not a Largest Contentful Paint (LCP)
+guarantee. Deferring image creation behind JavaScript can delay discovery.
 
 ### CORS Images for Canvas Manipulation
 
@@ -356,56 +425,42 @@ Use `fetchpriority="high"` for above-the-fold images that are critical for Large
 </lazy-img>
 ```
 
-The `crossorigin` attribute is necessary when you need to manipulate images from different origins in a canvas.
+For cross-origin canvas pixel access, the image server must also return an
+appropriate CORS response. The attribute alone doesn’t grant access.
 
 ### Controlling Visibility with State Attributes
 
 [View Demo](https://aarongustafson.github.io/lazy-img/demo/#state-attributes)
 
-The `loaded` and `qualifies` attributes allow you to control visibility based on current conditions:
+The `loaded` and `qualifies` attributes allow you to control visibility based on
+creation and current size conditions, not network progress. Don’t apply this
+rule to view-mode images, which don’t receive `qualifies`:
 
 ```css
-/* Hide images that loaded but no longer meet conditions (e.g., after rotation) */
-lazy-img[loaded]:not([qualifies]) {
+/* Hide created images that no longer meet size conditions */
+lazy-img:not([query='view'])[loaded]:not([qualifies]) {
   display: none;
 }
-
-/* Show a placeholder for images that qualify but haven't loaded yet */
-lazy-img[qualifies]:not([loaded])::before {
-  content: 'Loading...';
-  display: block;
-  padding: 2em;
-  background: #f0f0f0;
-  text-align: center;
-}
-
-/* Style images based on their qualification state */
-lazy-img[qualifies] {
-  opacity: 1;
-  transition: opacity 0.3s;
-}
-
-lazy-img:not([qualifies]) {
-  opacity: 0.5;
-}
 ```
+
+`[qualifies]:not([loaded])` isn’t a download-progress selector. The component
+sets `loaded` before the browser finishes fetching or decoding.
 
 ### Progressive Image Loading in Containers
 
 ```html
-<style>
-  .sidebar {
-    container-type: inline-size;
-  }
-</style>
-
 <div class="sidebar">
   <lazy-img src="sidebar-image.jpg" alt="Sidebar content" min-inline-size="300">
   </lazy-img>
 </div>
 ```
 
-### Art Direction with Named Breakpoints
+### Optional Alternatives with Named Breakpoints
+
+These are separate conditional images, not mutually exclusive `<picture>`
+sources. Once created, both can remain after a resize. Use native
+[`<picture>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/picture)
+for essential art-directed content.
 
 ```css
 /* Define breakpoints in your CSS */
@@ -451,15 +506,15 @@ lazy-img:not([qualifies]) {
 
 ### Immediate Loading (No Conditions)
 
-If you don't specify `min-inline-size` or `named-breakpoints`, the image loads immediately:
+In container or media mode, if you don’t specify `min-inline-size` or
+`named-breakpoints`, the component creates the image immediately:
 
 ```html
 <lazy-img src="image.jpg" alt="Loads immediately"></lazy-img>
 ```
 
-**Note:** While this pattern loads the image immediately (like a standard `img`), it still provides a performance benefit: **if JavaScript fails to load or execute, the image won't load at all**. This can be desirable for non-critical images that enhance but aren't essential to the content (e.g., decorative images, supplementary graphics, or marketing banners).
-
-**Important:** Only use this pattern for non-critical images that aren't referenced in your content. Critical images that are part of your content should use standard `img` tags to ensure they load even when JavaScript is unavailable.
+Without JavaScript, it creates no image. Use this only for optional images
+that the surrounding content doesn’t depend on.
 
 ### Container-Based Loading (Default)
 
@@ -492,29 +547,35 @@ If you don't specify `min-inline-size` or `named-breakpoints`, the image loads i
 </lazy-img>
 ```
 
-## Demo styling and validation
+## Accessibility, Failure, and Localization
 
 The component supplies no color palette or controls. Its image keeps the
 authored alternative text; use native images for essential content that must
 remain available without JavaScript.
 
-The [demos](demo/index.html) pair reading surfaces with `CanvasText`/`Canvas`,
-inline code with `ButtonText`/`ButtonFace`, and code blocks with
-`FieldText`/`Field`. Supporting text inherits its surface’s foreground. The
-displayed component tags, CSS hooks, event API, and import/registration code use
-semantic `mark` elements with `MarkText`/`Mark`; generic surrounding code stays
-unmarked, and the copyable code text is unchanged. The
-Canvas-backed footer uses an 80% foreground mix, with full-strength text in
-forced colors, increased contrast, or browsers without `color-mix()`.
-Loading states have text and border-style cues, not just colored borders.
+Supply meaningful `alt` text for informative images, or `alt=""` for decoration.
+The default is empty. The shadow root doesn’t expose a slot, so authored child
+content isn’t a visible fallback after upgrade. Put descriptions and recovery
+links beside the component, as in the
+[failure example](https://aarongustafson.github.io/lazy-img/demo/#failure-example).
+A missing `src` creates no image. A failed download doesn’t reset `loaded`, emit
+a component error event, or trigger an automatic retry.
+
+The component adds no focusable controls or live announcements. It generates
+no status strings; authors provide alternative text and any messages or recovery
+UI. Translate those strings or adapt them to your application’s vocabulary.
+
+## Demo Validation
+
+The [demos](demo/index.html) keep visible request-state text alongside visual cues.
 Width sliders preserve native keyboard behavior and focus. They follow the
 rounded content width after pointer resizing and update their bounds for the
 available space; arrow keys adjust the width by one pixel. In forced colors,
 code surfaces retain solid `ButtonFace` or `Field` backgrounds rather than
 depending on gradients that browsers suppress.
 
-The demos describe `loaded` and `lazy-img:loaded` as request-start signals:
-they don’t confirm a successful download. The failure example retains an
+The demos describe `loaded` and `lazy-img:loaded` as image-creation signals:
+a request can begin, but they don’t confirm a successful download. The failure example retains an
 authored description and recovery link. Demo messages are authored in the page
 and can be translated there; the component generates no status strings.
 The optional-image failure and essential native-image examples have separate
@@ -523,9 +584,9 @@ preserves its aspect ratio when constrained and works without JavaScript.
 
 Run `npm run test:run`, `npm run lint`, and `npm run test:browser`.
 Browser tests use one worker on port 4184 and cover Chromium, Firefox, and
-WebKit, including 19 distinct study palettes representing 62 observations,
-light/dark rendering, native focus, narrow layouts, enlarged text, image
-failure, and no-JavaScript behavior. Every successful demo image uses a local
+WebKit, including palette substitution, light/dark rendering, native focus,
+narrow layouts, enlarged text, image failure, and no-JavaScript behavior.
+Every successful demo image uses a local
 authored SVG; browser checks decode the actual image sources without intercepting
 image requests. The responsive example includes 400px, 800px, and 1200px sources.
 CDN tests substitute local module responses, so they don’t establish live CDN
@@ -544,7 +605,7 @@ native dragging still needs a manual check there.
 
 ## Browser Support
 
-Works in all modern browsers supporting:
+The component uses these browser APIs:
 
 - Custom Elements v1
 - Shadow DOM v1
@@ -552,7 +613,9 @@ Works in all modern browsers supporting:
 - IntersectionObserver (for view mode)
 - ES Modules
 
-For legacy browser support, consider polyfills for Custom Elements, ResizeObserver, and IntersectionObserver.
+Container and media modes use ResizeObserver and resize events respectively;
+view mode requires IntersectionObserver. Unsupported APIs don’t have a built-in
+fallback. Keep essential images native rather than relying on polyfills.
 
 ## Migration from Easy Lazy Images
 
@@ -592,14 +655,18 @@ Key differences:
 - Default query type is `container` (not `media`)
 - No longer requires `watchResize()` - uses ResizeObserver internally
 
-## Performance
+## Resize Handling and Cleanup
 
-- **Throttled Resize**: Resize events are throttled to 150ms to prevent excessive checks
-- **Shared ResizeObserver**: Multiple `lazy-img` elements observing the same parent container share a single `ResizeObserver` instance, making it highly efficient for galleries and other scenarios with many images
-- **Shared Window Resize Listener**: Multiple `lazy-img` elements using media query mode (`query="media"`) share a single window resize event listener, ensuring optimal performance even with hundreds of instances on a page
-- **Shared IntersectionObserver**: Multiple `lazy-img` elements using view mode with the same `view-range-start` configuration share a single `IntersectionObserver`, making scroll-based lazy loading extremely efficient even with hundreds of images
-- **Efficient Loading**: Images only render in the DOM after loading conditions are met
-- **Clean Disconnection**: Properly cleans up observers and event listeners when elements are removed; automatically removes unused shared observers and listeners when no longer needed
+Size checks run 150ms after the most recent resize notification. Elements with
+the same parent share a ResizeObserver; media-mode elements share a window
+resize listener. View-mode elements with matching settings share an
+IntersectionObserver, subject to the [view-mode limitation](#view-mode-intersectionobserver).
+
+On disconnection, the component removes its callbacks and pending size-check
+timer. Shared observers and listeners are removed when no callbacks remain.
+Disconnection doesn’t remove an already-created image or reset its state.
+Reconnection sets up observation again. See the [source](./lazy-img.js) for
+implementation details.
 
 ## License
 
